@@ -1,6 +1,6 @@
 
 
-use fiiish_release_tool::Release;
+use omr_bumper::Release;
 pub fn main() -> anyhow::Result<()> {
 
 	let release = Release::new();

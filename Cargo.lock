@@ -67,18 +67,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e78d4f1cc4ae33bbfc157ed5d5a5ef3bc29227303d595861deb238fcec4e9457"
 
 [[package]]
-name = "fiiish-release-tool"
-version = "0.1.35-dev"
-dependencies = [
- "anyhow",
- "git2",
- "regex",
- "semver",
- "toml_edit",
- "unescape",
-]
-
-[[package]]
 name = "form_urlencoded"
 version = "1.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -223,6 +211,18 @@ name = "memchr"
 version = "2.4.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "308cc39be01b73d0d18f82a0e7b2a3df85245f84af96fdddc5d202d27e47b86a"
+
+[[package]]
+name = "omr-bumper"
+version = "0.1.2-dev"
+dependencies = [
+ "anyhow",
+ "git2",
+ "regex",
+ "semver",
+ "toml_edit",
+ "unescape",
+]
 
 [[package]]
 name = "openssl-probe"
