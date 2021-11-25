@@ -1,0 +1,18 @@
+[package]
+name = "omr-bumper"
+version = "0.1.0"
+edition = "2021"
+
+license = "MIT"
+description = "An opiniated version bumper for releases. Works for us."
+readme = "README.md"
+homepage = "https://github.com/AndreasOM/omr-bumper"
+repository = "https://github.com/AndreasOM/omr-bumper"
+keywords = ["tools"]
+categories = ["command-line-utilities","game-development"]
+
+[[bin]]
+path = "src/main.rs"
+name = "omr-bumper"
+
+[dependencies]
