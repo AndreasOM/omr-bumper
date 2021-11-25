@@ -9,12 +9,14 @@
 	- [ ] Update Cargo.lock `cargo update --workspace --dry-run --verbose`
 	- [x] Commmit Cargo.toml
 		- [ ] and other files as needed (e.g. Cargo.lock)
+		/* for now only one push at the end !!!
 	- [ ] Push to git (fetch, rebase, push)
 		- [x] fetch
 		- [x] rebase
+		- [x] push
 	- [ ] Tag the release
 	- [ ] Push the tag
-
+		*/
 ## TODO
 
 
@@ -26,7 +28,7 @@
 	- [ ] Update Cargo.lock `cargo update --workspace --dry-run --verbose`
 	- [x] Commit Cargo.toml
 		- [ ] and other files as needed
-	- [ ] Push to git (fetch, rebase, push)
+	- [x] Push to git (fetch, rebase, push)
 
 ## DONE
 

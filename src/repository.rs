@@ -1,7 +1,8 @@
 use git2::{
 	Cred,
-	RemoteCallbacks,
 	FetchOptions,
+	PushOptions,
+	RemoteCallbacks,
 //	Repository,
 	Signature,
 	Status,
@@ -299,13 +300,59 @@ pub fn rebase(
 		*/
 	}
 
-	pub fn push( &mut self ) -> anyhow::Result<()> {
+	pub fn push( &mut self ) -> anyhow::Result<(usize)> {
 		match &self.repo {
 			Some( repo ) => {
+				let remote_name = "origin";
+				let mut remote = match repo.find_remote( &remote_name ) {
+					Ok( remote )	=> remote,
+					Err( e )		=> bail!( "Couldn't find remote({}): {}", &remote_name, &e ),
+				};
+
+				let mut cbs = RemoteCallbacks::new();
+				cbs.credentials(|_url, username_from_url, _allowed_types| {
+					dbg!(&username_from_url);
+					Cred::ssh_key(
+						username_from_url.unwrap(),
+						None,
+						std::path::Path::new(&format!("{}/.ssh/id_ed25519", std::env::var("HOME").unwrap())),
+//						std::path::Path::new(&format!("{}/.ssh/id_rsa", std::env::var("HOME").unwrap())),
+						None,
+					)
+				});
+				cbs.transfer_progress(|progress| {
+					println!("Transfer progress: {}", progress.received_bytes());
+					println!("{}/{} objects", progress.received_objects(), progress.total_objects());
+//					dbg!(&progress.received_bytes());
+					true
+				});
+				let mut opts = PushOptions::new();
+				opts.remote_callbacks( cbs );
+				remote.push(
+					&["refs/heads/main"],
+					Some( &mut opts )
+				)?;
+
+				/*
+				// only works for fetch!!!
+				let stats = remote.stats();
+				println!("Pushed {} bytes.", stats.received_bytes());
+				println!("Pushed {} objects.", stats.received_objects());
+				Ok(stats.total_objects())
+				*/
+
+				Ok( 0 )
+
+				/*
+pub fn push<Str: AsRef<str> + IntoCString + Clone>(
+    &mut self,
+    refspecs: &[Str],
+    opts: Option<&mut PushOptions<'_>>
+) -> Result<(), Error>
+				*/
 			},
 			None => bail!( "No repo open for push" ),
 		}
-		Ok(())
 	}
 }
 
