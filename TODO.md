@@ -3,12 +3,25 @@
 ## In Progress
 
 
-- [ ] Prepare release
+
+## TODO
+
+
+- [ ] Improve error handling
+- [ ] Cleanup status reporting
+- [ ] Improve crate/bin documentation
+- [ ] Add command line options
+	- [ ] Specify pre-release level (alpha/beta/[none])
+	- [ ] Specify bump (patch/minor/major)
+	
+## DONE
+
+- [x] Prepare release
 	- [x] Check workspace/git is clean
 	- [x] Remove -dev from version, and replace by *alpha*/beta/[none]
-	- [ ] Update Cargo.lock `cargo update --workspace --dry-run --verbose`
+	- [x] Update Cargo.lock `cargo update --workspace --verbose`
 	- [x] Commmit Cargo.toml
-		- [ ] and other files as needed (e.g. Cargo.lock)
+		- [x] and other files as needed (e.g. Cargo.lock)
 	- [x] Push to git (fetch, rebase, push)
 		- [x] fetch
 		- [x] rebase
@@ -16,21 +29,13 @@
 	- [x] Tag the release
 	- [x] Push the tag
 
-## TODO
-
-- [ ] Prepare to continue with development
+- [x] Prepare to continue with development
 	- [x] Bump the local version patch/minor/major
 	- [x] Remove *alpha*/beta/[none] from version, and replace by dev
-	- [ ] Update Cargo.lock `cargo update --workspace --dry-run --verbose`
+	- [x] Update Cargo.lock `cargo update --workspace --verbose`
 	- [x] Commit Cargo.toml
-		- [ ] and other files as needed
+		- [x] and other files as needed
 	- [x] Push to git (fetch, rebase, push)
-
-- [ ] Improve error handling
-- [ ] Cleanup status reporting
-- [ ] Improve crate/bin documentation
-
-## DONE
 
 - [x] Commit message includes version
 - [x] Improve output during execution

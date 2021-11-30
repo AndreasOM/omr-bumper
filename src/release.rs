@@ -1,6 +1,7 @@
 
 use anyhow::*;
 
+use crate::cargo::Cargo;
 use crate::manifest::Manifest;
 use crate::repository::Repository;
 
@@ -20,6 +21,8 @@ impl Release {
 		if false { // use repository in sub folder for testing
 			let root = std::path::Path::new(&std::env::current_dir()?).join("./automatic-octo-guacamole/");
 			std::env::set_current_dir(&root)?;
+		} else {
+
 		}
 
 		println!("Working in {:?}", std::env::current_dir()?);
@@ -57,6 +60,12 @@ impl Release {
 
 		manifest.save()?;
 
+		let mut cargo = Cargo::new( "." );
+		cargo.open()?;
+		cargo.update_workspace()?;
+
+//		panic!("STOP");
+
 		let release_version = manifest.get_pretty_version()?;
 		println!("Release version: {}", &release_version);
 
@@ -75,6 +84,7 @@ impl Release {
 
 		let mut files = Vec::new();
 		files.push( "Cargo.toml".to_owned() );
+		files.push( "Cargo.lock".to_owned() );
 		let msg = format!( ": Bump version for alpha release - {}", &release_version );
 		println!("Commit");
 		repo.commit( &files, &msg )?;
@@ -100,13 +110,14 @@ impl Release {
 //		let mut repo = Repository::new( "./automatic-octo-guacamole/" );
 
 		repo.open()?;
-		
+
 		println!("---- Post Release ----");
 
 		manifest.bump_patch_version()?;
 		manifest.set_version_suffix("dev")?;
 
 		manifest.save()?;
+		cargo.update_workspace()?;
 
 		let new_version = manifest.get_pretty_version()?;
 		println!("New development version: {}", &new_version);
