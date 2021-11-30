@@ -12,7 +12,7 @@ use semver::{
 	Prerelease,
 };
 
-use anyhow::*;
+use anyhow::bail;
 
 
 pub struct Manifest {

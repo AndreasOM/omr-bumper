@@ -8,7 +8,8 @@ use git2::{
 	Status,
 };
 
-use anyhow::*;
+//use anyhow::*;
+use anyhow::bail;
 
 use std::path::Path;
 
