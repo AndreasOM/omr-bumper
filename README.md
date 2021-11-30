@@ -1,4 +1,4 @@
-# fiiiish-release-tool
+# omr-bumper
 
 ## About
 
