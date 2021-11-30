@@ -180,6 +180,36 @@ pub fn revparse_ext(
 		}
 	}
 
+	pub fn tag( &mut self, tag: &str, msg: &str ) -> anyhow::Result<()> {
+		match &self.repo {
+			Some( repo ) => {
+				let rv = repo.revparse( "HEAD" )?;
+				let ho = match rv.from() {
+					Some( ho ) => ho,
+					None => bail!( "No HEAD found!" ),
+				};
+				println!("Tagging {} with {}", &ho.id(), &tag);
+				dbg!(&ho);
+
+				let sig = repo.signature()?;
+
+				let tag_oid = repo.tag( tag, &ho, &sig, msg, true )?;
+				dbg!(&tag_oid);
+				Ok(())
+/*
+pub fn tag(
+    &self,
+    name: &str,
+    target: &Object<'_>,
+    tagger: &Signature<'_>,
+    message: &str,
+    force: bool
+) -> Result<Oid, Error>
+*/
+			},
+			None => bail!( "No repo open for tag" ),
+		}
+	}
 	pub fn fetch( &mut self ) -> anyhow::Result<(usize)> {
 		match &self.repo {
 			Some( repo )	=> {
@@ -230,7 +260,7 @@ pub fn revparse_ext(
 					Some( oho ) => oho,
 					None => bail!( "No origin/HEAD found!" ),
 				};
-				dbg!(&oho);
+//				dbg!(&oho);
 
 				let upstream = match repo.find_annotated_commit( oho.id() ) {
 					Ok( commit ) => commit,
@@ -261,11 +291,20 @@ pub fn commit(
 */							
 							let sig = repo.signature()?;
 
-							rebase.commit(
+							match rebase.commit(
 								None,
 								&sig,
 								None,
-							)?;
+							) {
+								Ok( r ) => {
+									dbg!( &r );
+								},
+								Err( e ) => {
+									dbg!( &e );
+									// :TODO: decide when to bail
+//									bail!( "Rebase Error {:?}", &e );
+								},
+							}
 						},
 						Err( e ) => {
 							dbg!( &e );
@@ -354,6 +393,69 @@ pub fn push<Str: AsRef<str> + IntoCString + Clone>(
 			None => bail!( "No repo open for push" ),
 		}
 	}
+
+	pub fn push_tag( &mut self, tag: &str ) -> anyhow::Result<(usize)> {
+		match &self.repo {
+			Some( repo ) => {
+				let remote_name = "origin";
+				let mut remote = match repo.find_remote( &remote_name ) {
+					Ok( remote )	=> remote,
+					Err( e )		=> bail!( "Couldn't find remote({}): {}", &remote_name, &e ),
+				};
+
+				let mut cbs = RemoteCallbacks::new();
+				cbs.credentials(|_url, username_from_url, _allowed_types| {
+//					dbg!(&username_from_url);
+					Cred::ssh_key(
+						username_from_url.unwrap(),
+						None,
+						std::path::Path::new(&format!("{}/.ssh/id_ed25519", std::env::var("HOME").unwrap())),
+//						std::path::Path::new(&format!("{}/.ssh/id_rsa", std::env::var("HOME").unwrap())),
+						None,
+					)
+				});
+				cbs.transfer_progress(|progress| {
+					println!("Transfer progress: {}", progress.received_bytes());
+					println!("{}/{} objects", progress.received_objects(), progress.total_objects());
+//					dbg!(&progress.received_bytes());
+					true
+				});
+				cbs.push_update_reference(|name, status|{
+					println!("Push Update Reference: {} -> {:?}", name, status);
+					Ok(())
+				});
+				let mut opts = PushOptions::new();
+				opts.remote_callbacks( cbs );
+				let tag_ref = format!("refs/tags/{}", &tag);
+				println!("Pushing ref {}", &tag_ref);
+				remote.push(
+					&[ &tag_ref ],
+					Some( &mut opts )
+				)?;
+//git push <corresponding remote> refs/tags/*:refs/tags/*	
+
+				/*
+				// only works for fetch!!!
+				let stats = remote.stats();
+				println!("Pushed {} bytes.", stats.received_bytes());
+				println!("Pushed {} objects.", stats.received_objects());
+				Ok(stats.total_objects())
+				*/
+
+				Ok( 0 )
+
+				/*
+pub fn push<Str: AsRef<str> + IntoCString + Clone>(
+    &mut self,
+    refspecs: &[Str],
+    opts: Option<&mut PushOptions<'_>>
+) -> Result<(), Error>
+				*/
+			},
+			None => bail!( "No repo open for push" ),
+		}
+	}
+
 }
 
 

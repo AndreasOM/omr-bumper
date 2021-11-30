@@ -9,26 +9,26 @@
 	- [ ] Update Cargo.lock `cargo update --workspace --dry-run --verbose`
 	- [x] Commmit Cargo.toml
 		- [ ] and other files as needed (e.g. Cargo.lock)
-		/* for now only one push at the end !!!
-	- [ ] Push to git (fetch, rebase, push)
+	- [x] Push to git (fetch, rebase, push)
 		- [x] fetch
 		- [x] rebase
 		- [x] push
-	- [ ] Tag the release
-	- [ ] Push the tag
-		*/
+	- [x] Tag the release
+	- [x] Push the tag
+
 ## TODO
 
-
-
-
-- Prepare to continue with development
+- [ ] Prepare to continue with development
 	- [x] Bump the local version patch/minor/major
 	- [x] Remove *alpha*/beta/[none] from version, and replace by dev
 	- [ ] Update Cargo.lock `cargo update --workspace --dry-run --verbose`
 	- [x] Commit Cargo.toml
 		- [ ] and other files as needed
 	- [x] Push to git (fetch, rebase, push)
+
+- [ ] Improve error handling
+- [ ] Cleanup status reporting
+- [ ] Improve crate/bin documentation
 
 ## DONE
 

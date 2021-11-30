@@ -76,11 +76,35 @@ impl Release {
 		let mut files = Vec::new();
 		files.push( "Cargo.toml".to_owned() );
 		let msg = format!( ": Bump version for alpha release - {}", &release_version );
+		println!("Commit");
 		repo.commit( &files, &msg )?;
 
+		println!("Fetch");
+		if repo.fetch()? > 0 {
+			bail!("Fetch was not empty. Please resolve manually!")
+		};
+		println!("Rebase");
+		repo.rebase()?;
+		println!("Push");
+		repo.push()?;
+
+		let tag_msg = format!( ". Tag {}", &release_version );
+		println!("Tag");
+		repo.tag( &release_version, &tag_msg )?;
+		println!("Push Tag");
+		repo.push_tag( &release_version )?;
+
+
 		// post release
+		let mut repo = Repository::new( "." );
+//		let mut repo = Repository::new( "./automatic-octo-guacamole/" );
+
+		repo.open()?;
+		
+		println!("---- Post Release ----");
+
 		manifest.bump_patch_version()?;
-		manifest.set_version_suffix("dev");
+		manifest.set_version_suffix("dev")?;
 
 		manifest.save()?;
 
@@ -91,7 +115,6 @@ impl Release {
 		// :TODO: update Cargo.lock
 		let msg = format!( ": Bump version back to dev release, and bump patch level - {}", &new_version );
 		repo.commit( &files, &msg )?;
-
 
 		} else {
 			println!( "Skipping everything up to fetch/rebase/push!" );
@@ -106,10 +129,13 @@ impl Release {
 			}
 		}
 
+		println!("Fetch");
 		if repo.fetch()? > 0 {
 			bail!("Fetch was not empty. Please resolve manually!")
 		};
+		println!("Rebase");
 		repo.rebase()?;
+		println!("Push");
 		repo.push()?;
 
 		let dirty = repo.get_dirty();
