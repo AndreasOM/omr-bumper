@@ -108,15 +108,37 @@ impl Manifest {
 
 	pub fn bump_patch_version( &mut self ) -> anyhow::Result<()> {
 		let old_version = self.get_version()?;
-//		dbg!(&old_version);
 
 		let mut new_version = old_version.clone();
 		new_version.patch = old_version.patch + 1;
-//		dbg!(&new_version);
 
 		self.set_version( &new_version );
-		Ok(())		
+		Ok(())
 	}
+
+	pub fn bump_minor_version( &mut self ) -> anyhow::Result<()> {
+		let old_version = self.get_version()?;
+
+		let mut new_version = old_version.clone();
+		new_version.patch = 0;
+		new_version.minor = old_version.minor + 1;
+
+		self.set_version( &new_version );
+		Ok(())
+	}
+
+	pub fn bump_major_version( &mut self ) -> anyhow::Result<()> {
+		let old_version = self.get_version()?;
+
+		let mut new_version = old_version.clone();
+		new_version.patch = 0;
+		new_version.minor = 0;
+		new_version.major = old_version.major + 1;
+
+		self.set_version( &new_version );
+		Ok(())
+	}
+
 	pub fn set_version_suffix(&mut self, suffix: &str ) -> anyhow::Result<()> {
 		let old_version = self.get_version()?;
 //		dbg!(&old_version);

@@ -5,15 +5,42 @@ use crate::cargo::Cargo;
 use crate::manifest::Manifest;
 use crate::repository::Repository;
 
-pub struct Release {
-
+#[derive(Debug)]
+enum BumpLevel {
+	Patch,
+	Minor,
+	Major
 }
+
+#[derive(Debug)]
+pub struct Release {
+	bump_level:			BumpLevel,
+	pre_release_suffix:	String,
+}
+
 
 impl Release {
 	pub fn new() -> Self {
 		Self {
-
+			bump_level:			BumpLevel::Patch,
+			pre_release_suffix: "alpha".to_string(),
 		}
+	}
+
+	pub fn set_pre_release_suffix( &mut self, pre_release_suffix: &str ) {
+		self.pre_release_suffix = pre_release_suffix.to_string();
+	}
+
+	pub fn set_bump_level(&mut self, bump_level: &str ) -> anyhow::Result<()> {
+
+		self.bump_level = match bump_level {
+			"patch" => BumpLevel::Patch,
+			"minor" => BumpLevel::Minor,
+			"major" => BumpLevel::Major,
+			o => bail!( "Invalid bump level: {}", &o ),
+		};
+
+		Ok(())
 	}
 
 	pub fn run( &self ) -> anyhow::Result<()> {
@@ -56,7 +83,7 @@ impl Release {
 
 		let old_version = manifest.get_pretty_version()?;
 		println!("Current version: {}", &old_version);
-		manifest.set_version_suffix("alpha");
+		manifest.set_version_suffix( &self.pre_release_suffix );
 
 		manifest.save()?;
 
@@ -85,7 +112,7 @@ impl Release {
 		let mut files = Vec::new();
 		files.push( "Cargo.toml".to_owned() );
 		files.push( "Cargo.lock".to_owned() );
-		let msg = format!( ": Bump version for alpha release - {}", &release_version );
+		let msg = format!( ": Bump version for {} release - {}", &self.pre_release_suffix ,&release_version );
 		println!("Commit");
 		repo.commit( &files, &msg )?;
 
@@ -113,7 +140,12 @@ impl Release {
 
 		println!("---- Post Release ----");
 
-		manifest.bump_patch_version()?;
+		match self.bump_level {
+			BumpLevel::Patch => manifest.bump_patch_version()?,
+			BumpLevel::Minor => manifest.bump_minor_version()?,
+			BumpLevel::Major => manifest.bump_major_version()?,
+		};
+		
 		manifest.set_version_suffix("dev")?;
 
 		manifest.save()?;

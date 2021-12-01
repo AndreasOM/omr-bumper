@@ -3,18 +3,18 @@
 ## In Progress
 
 
-
 ## TODO
 
 
 - [ ] Improve error handling
 - [ ] Cleanup status reporting
 - [ ] Improve crate/bin documentation
-- [ ] Add command line options
-	- [ ] Specify pre-release level (alpha/beta/[none])
-	- [ ] Specify bump (patch/minor/major)
-	
+
 ## DONE
+
+- [x] Add command line options
+	- [x] Specify pre-release level (alpha/beta/[none])
+	- [x] Specify bump (patch/minor/major)
 
 - [x] Prepare release
 	- [x] Check workspace/git is clean

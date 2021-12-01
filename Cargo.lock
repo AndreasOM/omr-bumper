@@ -726,6 +726,7 @@ version = "0.1.6-dev"
 dependencies = [
  "anyhow",
  "cargo",
+ "clap",
  "git2",
  "path-absolutize",
  "semver",
