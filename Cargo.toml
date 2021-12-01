@@ -1,6 +1,6 @@
 [package]
 name = 	 	"omr-bumper"
-version =	"0.2.1-alpha" # :TODO: bump once released
+version =	"0.2.2-dev" # :TODO: bump once released
 edition = 	"2021"
 
 license = "MIT"
