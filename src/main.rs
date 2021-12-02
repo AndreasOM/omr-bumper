@@ -39,6 +39,16 @@ pub fn main() -> anyhow::Result<()> {
 						.help( "Skip ALL git steps" )
 						.takes_value( false )
 					)
+					.arg( Arg::with_name( "skip-push")
+						.long( "skip-push" )
+						.help( "Skip pushing to origin" )
+						.takes_value( false )
+					)
+					.arg( Arg::with_name( "skip-tag")
+						.long( "skip-tag" )
+						.help( "Skip tagging" )
+						.takes_value( false )
+					)
 					.get_matches();
 
 
@@ -48,6 +58,8 @@ pub fn main() -> anyhow::Result<()> {
 	let bump_level			= matches.value_of( "bump-level" ).unwrap_or( "patch" ).to_string();
 	let allow_dirty			= matches.is_present( "allow-dirty" );
 	let skip_git			= matches.is_present( "skip-git" );
+	let skip_push			= matches.is_present( "skip-push" );
+	let skip_tag			= matches.is_present( "skip-tag" );
 
 	if ![ "patch".to_string(), "minor".to_string(), "major".to_string() ].contains( &bump_level ) {
 		println!( "Error: Invalid bump level {} should be patch/minor/major", &bump_level );
@@ -59,6 +71,8 @@ pub fn main() -> anyhow::Result<()> {
 //	println!( "Allow Dirty        : {}", allow_dirty?"yes":"no" );
 	println!( "Allow Dirty        : {}", if allow_dirty { "yes" } else { "no" } );
 	println!( "Skip Git           : {}", if skip_git { "yes" } else { "no" } );
+	println!( "Skip Push          : {}", if skip_push { "yes" } else { "no" } );
+	println!( "Skip Tag           : {}", if skip_tag { "yes" } else { "no" } );
 
 
 	let mut release = Release::new();
@@ -67,6 +81,8 @@ pub fn main() -> anyhow::Result<()> {
 	release.set_bump_level( &bump_level )?;
 	release.set_allow_dirty( allow_dirty );
 	release.set_skip_git( skip_git );
+	release.set_skip_push( skip_push );
+	release.set_skip_tag( skip_tag );
 
 //	dbg!( &release );
 

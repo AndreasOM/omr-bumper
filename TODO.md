@@ -5,10 +5,6 @@
 
 ## TODO
 
-- [ ] Skip pushing if `--skip-push`
-- [ ] Skip tagggin if `--skip-tag`
-
-
 - [ ] Improve error handling
 - [ ] Cleanup status reporting
 - [ ] Improve crate/bin documentation
@@ -20,6 +16,8 @@
 
 ## DONE
 
+- [x] Skip pushing if `--skip-push`
+- [x] Skip tagggin if `--skip-tag`
 - [x] Skip all git if `--skip-git`
 - [x] Skip dirty repository check if `--allow-dirty`
 - [x] Fix all warnings

@@ -18,6 +18,8 @@ pub struct Release {
 	pre_release_suffix:	String,
 	allow_dirty:		bool,
 	skip_git:			bool,
+	skip_push:			bool,
+	skip_tag:			bool,
 }
 
 
@@ -28,6 +30,8 @@ impl Release {
 			pre_release_suffix: "alpha".to_string(),
 			allow_dirty:		false,
 			skip_git:			false,
+			skip_push:			false,
+			skip_tag:			false,
 		}
 	}
 
@@ -53,6 +57,14 @@ impl Release {
 
 	pub fn set_skip_git( &mut self, skip_git: bool ) {
 		self.skip_git = skip_git;
+	}
+
+	pub fn set_skip_push( &mut self, skip_push: bool ) {
+		self.skip_push = skip_push;
+	}
+
+	pub fn set_skip_tag( &mut self, skip_tag: bool ) {
+		self.skip_tag = skip_tag;
 	}
 
 	pub fn run( &self ) -> anyhow::Result<()> {
@@ -135,14 +147,27 @@ impl Release {
 			};
 			println!("Rebase");
 			repo.rebase()?;
-			println!("Push");
-			repo.push()?;
 
-			let tag_msg = format!( ". Tag {}", &release_version );
-			println!("Tag");
-			repo.tag( &release_version, &tag_msg )?;
-			println!("Push Tag");
-			repo.push_tag( &release_version )?;
+			if !self.skip_push {
+				println!("Push");
+				repo.push()?;
+			} else {
+				println!("Skipping push to origin as requested.");
+			}
+
+			if !self.skip_tag {
+				let tag_msg = format!( ". Tag {}", &release_version );
+				println!("Tag");
+				repo.tag( &release_version, &tag_msg )?;
+				if !self.skip_push {
+					println!("Push Tag");
+					repo.push_tag( &release_version )?;
+				} else {
+					println!("Skipping push (of tag) to origin as requested.");
+				}
+			} else {
+				println!("Skipping tagging as requested.");
+			}
 		}
 
 		// post release
@@ -194,8 +219,13 @@ impl Release {
 			};
 			println!("Rebase");
 			repo.rebase()?;
-			println!("Push");
-			repo.push()?;
+
+			if !self.skip_push {
+				println!("Push");
+				repo.push()?;
+			} else {
+				println!("Skipping push to origin as requested.");
+			}
 
 			let dirty = repo.get_dirty();
 
