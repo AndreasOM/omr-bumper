@@ -191,12 +191,12 @@ pub fn revparse_ext(
 					None => bail!( "No HEAD found!" ),
 				};
 				println!("Tagging {} with {}", &ho.id(), &tag);
-				dbg!(&ho);
+//				dbg!(&ho);
 
 				let sig = repo.signature()?;
 
-				let tag_oid = repo.tag( tag, &ho, &sig, msg, true )?;
-				dbg!(&tag_oid);
+				let _tag_oid = repo.tag( tag, &ho, &sig, msg, true )?;
+//				dbg!(&tag_oid);
 				Ok(())
 /*
 pub fn tag(
@@ -212,6 +212,18 @@ pub fn tag(
 			None => bail!( "No repo open for tag" ),
 		}
 	}
+
+	fn credentials_cb( _url: &str, username_from_url: Option<&str>, _allowed_types: git2::CredentialType ) -> Result<Cred, git2::Error> {
+//		dbg!(&username_from_url);
+		Cred::ssh_key(
+			username_from_url.unwrap(),
+			None,
+			std::path::Path::new(&format!("{}/.ssh/id_ed25519", std::env::var("HOME").unwrap())),
+//			std::path::Path::new(&format!("{}/.ssh/id_rsa", std::env::var("HOME").unwrap())),
+			None,
+		)
+	}
+
 	pub fn fetch( &mut self ) -> anyhow::Result<usize> {
 		match &self.repo {
 			Some( repo )	=> {
@@ -224,16 +236,7 @@ pub fn tag(
 //				dbg!(&remote.name(), &remote.url());
 
 				let mut cbs = RemoteCallbacks::new();
-				cbs.credentials(|_url, username_from_url, _allowed_types| {
-					dbg!(&username_from_url);
-					Cred::ssh_key(
-						username_from_url.unwrap(),
-						None,
-						std::path::Path::new(&format!("{}/.ssh/id_ed25519", std::env::var("HOME").unwrap())),
-//						std::path::Path::new(&format!("{}/.ssh/id_rsa", std::env::var("HOME").unwrap())),
-						None,
-					)
-				});
+				cbs.credentials(|url, username_from_url, allowed_types| { Repository::credentials_cb( url, username_from_url, allowed_types ) });
 				cbs.transfer_progress(|progress| {
 					println!("Transfer progress: {}", progress.received_bytes());
 					println!("{}/{} objects", progress.received_objects(), progress.total_objects());
@@ -280,8 +283,8 @@ pub fn revparse(&self, spec: &str) -> Result<Revspec<'_>, Error>
 //				};
 //				for ro in &mut rebase {
 					match ro {
-						Ok( ro ) => {
-							dbg!( &ro );
+						Ok( _ro ) => {
+//							dbg!( &ro );
 							// commit
 							/*
 pub fn commit(
@@ -298,8 +301,8 @@ pub fn commit(
 								&sig,
 								None,
 							) {
-								Ok( r ) => {
-									dbg!( &r );
+								Ok( _r ) => {
+//									dbg!( &r );
 								},
 								Err( e ) => {
 									dbg!( &e );
@@ -351,16 +354,7 @@ pub fn rebase(
 				};
 
 				let mut cbs = RemoteCallbacks::new();
-				cbs.credentials(|_url, username_from_url, _allowed_types| {
-					dbg!(&username_from_url);
-					Cred::ssh_key(
-						username_from_url.unwrap(),
-						None,
-						std::path::Path::new(&format!("{}/.ssh/id_ed25519", std::env::var("HOME").unwrap())),
-//						std::path::Path::new(&format!("{}/.ssh/id_rsa", std::env::var("HOME").unwrap())),
-						None,
-					)
-				});
+				cbs.credentials(|url, username_from_url, allowed_types| { Repository::credentials_cb( url, username_from_url, allowed_types ) });
 				cbs.transfer_progress(|progress| {
 					println!("Transfer progress: {}", progress.received_bytes());
 					println!("{}/{} objects", progress.received_objects(), progress.total_objects());
