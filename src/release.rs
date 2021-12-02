@@ -17,6 +17,7 @@ pub struct Release {
 	bump_level:			BumpLevel,
 	pre_release_suffix:	String,
 	allow_dirty:		bool,
+	skip_git:			bool,
 }
 
 
@@ -26,6 +27,7 @@ impl Release {
 			bump_level:			BumpLevel::Patch,
 			pre_release_suffix: "alpha".to_string(),
 			allow_dirty:		false,
+			skip_git:			false,
 		}
 	}
 
@@ -49,6 +51,10 @@ impl Release {
 		self.allow_dirty = allow_dirty;
 	}
 
+	pub fn set_skip_git( &mut self, skip_git: bool ) {
+		self.skip_git = skip_git;
+	}
+
 	pub fn run( &self ) -> anyhow::Result<()> {
 
 		if false { // use repository in sub folder for testing
@@ -63,25 +69,27 @@ impl Release {
 		let mut repo = Repository::new( "." );
 //		let mut repo = Repository::new( "./automatic-octo-guacamole/" );
 
-		repo.open()?;
-		if !self.allow_dirty { // skip dirty
-			println!("Checking if repository is clean...");
 
-			let dirty = repo.get_dirty();
+		if !self.skip_git {
+			repo.open()?;
+			if !self.allow_dirty { // skip dirty
+				println!("Checking if repository is clean...");
 
-			if dirty.len() > 0 {
-				println!("Dirty files:");
-				for d in dirty.iter() {
-					println!("{}", d);
+				let dirty = repo.get_dirty();
+
+				if dirty.len() > 0 {
+					println!("Dirty files:");
+					for d in dirty.iter() {
+						println!("{}", d);
+					}
+					bail!("Repository is dirty");
 				}
-				bail!("Repository is dirty");
+				println!("Repositiory is clean (enough)");
+			} else {
+				println!("Skipping check if repository is clean!");
 			}
-			println!("Repositiory is clean (enough)");
-		} else {
-			println!("Skipping check if repository is clean!");
 		}
 
-		if true { // skip for faster iteration
 		// load the Cargo.toml
 		let mut manifest = Manifest::new( "Cargo.toml" );
 		manifest.load()?;
@@ -103,45 +111,47 @@ impl Release {
 
 		// dbg!(&doc);
 
-		let dirty = repo.get_dirty();
+		if !self.skip_git {
+			let dirty = repo.get_dirty();
 
-		if dirty.len() > 0 {
-			println!("Dirty files:");
-			for d in dirty.iter() {
-				println!("{}", d);
+			if dirty.len() > 0 {
+				println!("Dirty files:");
+				for d in dirty.iter() {
+					println!("{}", d);
+				}
 			}
+
+			let mut files = Vec::new();
+			files.push( "Cargo.toml".to_owned() );
+			files.push( "Cargo.lock".to_owned() );
+
+			let msg = format!( ": Bump version for {} release - {}", &self.pre_release_suffix ,&release_version );
+			println!("Commit");
+			repo.commit( &files, &msg )?;
+
+			println!("Fetch");
+			if repo.fetch()? > 0 {
+				bail!("Fetch was not empty. Please resolve manually!")
+			};
+			println!("Rebase");
+			repo.rebase()?;
+			println!("Push");
+			repo.push()?;
+
+			let tag_msg = format!( ". Tag {}", &release_version );
+			println!("Tag");
+			repo.tag( &release_version, &tag_msg )?;
+			println!("Push Tag");
+			repo.push_tag( &release_version )?;
 		}
-
-		// :TODO: update Cargo.lock
-
-		let mut files = Vec::new();
-		files.push( "Cargo.toml".to_owned() );
-		files.push( "Cargo.lock".to_owned() );
-		let msg = format!( ": Bump version for {} release - {}", &self.pre_release_suffix ,&release_version );
-		println!("Commit");
-		repo.commit( &files, &msg )?;
-
-		println!("Fetch");
-		if repo.fetch()? > 0 {
-			bail!("Fetch was not empty. Please resolve manually!")
-		};
-		println!("Rebase");
-		repo.rebase()?;
-		println!("Push");
-		repo.push()?;
-
-		let tag_msg = format!( ". Tag {}", &release_version );
-		println!("Tag");
-		repo.tag( &release_version, &tag_msg )?;
-		println!("Push Tag");
-		repo.push_tag( &release_version )?;
-
 
 		// post release
 		let mut repo = Repository::new( "." );
 //		let mut repo = Repository::new( "./automatic-octo-guacamole/" );
 
-		repo.open()?;
+		if !self.skip_git {
+			repo.open()?;
+		}
 
 		println!("---- Post Release ----");
 
@@ -160,38 +170,40 @@ impl Release {
 		println!("New development version: {}", &new_version);
 
 
-		// :TODO: update Cargo.lock
-		let msg = format!( ": Bump version back to dev release, and bump patch level - {}", &new_version );
-		repo.commit( &files, &msg )?;
+		if !self.skip_git {
+			let mut files = Vec::new();
+			files.push( "Cargo.toml".to_owned() );
+			files.push( "Cargo.lock".to_owned() );
 
-		} else {
-			println!( "Skipping everything up to fetch/rebase/push!" );
-		}
+			let msg = format!( ": Bump version back to dev release, and bump patch level - {}", &new_version );
+			repo.commit( &files, &msg )?;
 
-		let dirty = repo.get_dirty();
 
-		if dirty.len() > 0 {
-			println!("Dirty files before fetch:");
-			for d in dirty.iter() {
-				println!("{}", d);
+			let dirty = repo.get_dirty();
+
+			if dirty.len() > 0 {
+				println!("Dirty files before fetch:");
+				for d in dirty.iter() {
+					println!("{}", d);
+				}
 			}
-		}
 
-		println!("Fetch");
-		if repo.fetch()? > 0 {
-			bail!("Fetch was not empty. Please resolve manually!")
-		};
-		println!("Rebase");
-		repo.rebase()?;
-		println!("Push");
-		repo.push()?;
+			println!("Fetch");
+			if repo.fetch()? > 0 {
+				bail!("Fetch was not empty. Please resolve manually!")
+			};
+			println!("Rebase");
+			repo.rebase()?;
+			println!("Push");
+			repo.push()?;
 
-		let dirty = repo.get_dirty();
+			let dirty = repo.get_dirty();
 
-		if dirty.len() > 0 {
-			println!("Dirty files:");
-			for d in dirty.iter() {
-				println!("{}", d);
+			if dirty.len() > 0 {
+				println!("Dirty files:");
+				for d in dirty.iter() {
+					println!("{}", d);
+				}
 			}
 		}
 

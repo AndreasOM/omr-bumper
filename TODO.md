@@ -5,7 +5,6 @@
 
 ## TODO
 
-- [ ] Skip all git if `--skip-git`
 - [ ] Skip pushing if `--skip-push`
 - [ ] Skip tagggin if `--skip-tag`
 
@@ -21,6 +20,7 @@
 
 ## DONE
 
+- [x] Skip all git if `--skip-git`
 - [x] Skip dirty repository check if `--allow-dirty`
 - [x] Fix all warnings
 - [x] Add command line options
