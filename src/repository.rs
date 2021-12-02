@@ -33,7 +33,7 @@ impl Repository {
 		    Err(e) => bail!("failed to open: {}", e),
 		};
 
-		dbg!(&repo.state());
+//		dbg!(&repo.state());
 
 		self.repo = Some( repo );
 
@@ -47,6 +47,7 @@ impl Repository {
 				let mut check_s = Status::empty();
 				check_s.insert(Status::INDEX_NEW);
 				check_s.insert(Status::INDEX_MODIFIED);
+				check_s.insert(Status::WT_NEW);
 				check_s.insert(Status::WT_MODIFIED);
 
 				let mut skip_s = Status::empty();

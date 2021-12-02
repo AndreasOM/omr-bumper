@@ -16,6 +16,7 @@ enum BumpLevel {
 pub struct Release {
 	bump_level:			BumpLevel,
 	pre_release_suffix:	String,
+	allow_dirty:		bool,
 }
 
 
@@ -24,6 +25,7 @@ impl Release {
 		Self {
 			bump_level:			BumpLevel::Patch,
 			pre_release_suffix: "alpha".to_string(),
+			allow_dirty:		false,
 		}
 	}
 
@@ -43,6 +45,10 @@ impl Release {
 		Ok(())
 	}
 
+	pub fn set_allow_dirty( &mut self, allow_dirty: bool ) {
+		self.allow_dirty = allow_dirty;
+	}
+
 	pub fn run( &self ) -> anyhow::Result<()> {
 
 		if false { // use repository in sub folder for testing
@@ -58,7 +64,7 @@ impl Release {
 //		let mut repo = Repository::new( "./automatic-octo-guacamole/" );
 
 		repo.open()?;
-		if false { // skip dirty
+		if !self.allow_dirty { // skip dirty
 			println!("Checking if repository is clean...");
 
 			let dirty = repo.get_dirty();
@@ -74,7 +80,6 @@ impl Release {
 		} else {
 			println!("Skipping check if repository is clean!");
 		}
-
 
 		if true { // skip for faster iteration
 		// load the Cargo.toml
