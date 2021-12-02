@@ -28,7 +28,7 @@ impl /*<'a>*/ Cargo/*<'a>*/ {
 		if let Some( cfg ) = &self.cfg {
 			let p = std::path::Path::new(&self.path).join("Cargo.toml");
 			let p = p.absolutize()?;
-			let ws = Workspace::new( &p, &cfg )?;
+			let _ws = Workspace::new( &p, &cfg )?;
 //			self.ws = Some( ws );
 //			dbg!(&ws);
 			Ok(())			

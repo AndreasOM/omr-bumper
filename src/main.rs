@@ -48,7 +48,7 @@ pub fn main() -> anyhow::Result<()> {
 	let mut release = Release::new();
 
 	release.set_pre_release_suffix( &pre_release_suffix );
-	release.set_bump_level( &bump_level );
+	release.set_bump_level( &bump_level )?;
 
 	dbg!( &release );
 

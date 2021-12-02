@@ -30,7 +30,7 @@ impl Manifest {
 
 	pub fn load( &mut self ) -> anyhow::Result<()> {
 		let toml = std::fs::read_to_string( &self.path )?;
-		let mut doc = match toml.parse::<Document>(){
+		let doc = match toml.parse::<Document>(){
 			Ok( doc ) => doc,
 			Err( e ) => bail!( "Couldn't load manifest from >>{}<< {}", &self.path, &e ),
 		};
@@ -47,7 +47,7 @@ impl Manifest {
 		Ok(())
 	}
 
-	fn get_formatted_version( &self ) -> anyhow::Result<( Formatted< String > )> {
+	fn get_formatted_version( &self ) -> anyhow::Result<Formatted< String >> {
 		if let Some( doc ) = &self.doc {
 			let fs = match &doc["package"]["version"] {
 				Item::Value( Value::String( s ) ) => s, //.to_string(),
@@ -59,16 +59,16 @@ impl Manifest {
 		}
 	}
 
-	pub fn get_version( &self ) -> anyhow::Result<( Version )> {
+	pub fn get_version( &self ) -> anyhow::Result<Version> {
 		let fs = self.get_formatted_version()?;
 //		dbg!(&fs);
 		let v = fs.value();
-		let mut version = Version::parse(&v).unwrap();
+		let version = Version::parse(&v).unwrap();
 //			dbg!(&version);
 		return Ok( version );
 	}
 
-	pub fn get_pretty_version( &self ) -> anyhow::Result<(String)> {
+	pub fn get_pretty_version( &self ) -> anyhow::Result<String> {
 		let v = self.get_version()?;
 		Ok( v.to_string() )
 	}
@@ -85,7 +85,7 @@ impl Manifest {
 			match &mut ni {
 				Item::Value( Value::String( s ) ) => {
 //					dbg!(&s);
-					let mut d = s.decor_mut();
+					let d = s.decor_mut();
 //					dbg!(&d);
 					let od = fs.decor();
 					match ( od.prefix(), od.suffix() ) {
@@ -112,7 +112,7 @@ impl Manifest {
 		let mut new_version = old_version.clone();
 		new_version.patch = old_version.patch + 1;
 
-		self.set_version( &new_version );
+		self.set_version( &new_version )?;
 		Ok(())
 	}
 
@@ -123,7 +123,7 @@ impl Manifest {
 		new_version.patch = 0;
 		new_version.minor = old_version.minor + 1;
 
-		self.set_version( &new_version );
+		self.set_version( &new_version )?;
 		Ok(())
 	}
 
@@ -135,7 +135,7 @@ impl Manifest {
 		new_version.minor = 0;
 		new_version.major = old_version.major + 1;
 
-		self.set_version( &new_version );
+		self.set_version( &new_version )?;
 		Ok(())
 	}
 
@@ -147,7 +147,7 @@ impl Manifest {
 		new_version.pre = Prerelease::new( suffix ).unwrap();
 //		dbg!(&new_version);
 
-		self.set_version( &new_version );
+		self.set_version( &new_version )?;
 		Ok(())
 	}
 }

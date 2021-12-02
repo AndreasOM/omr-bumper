@@ -83,7 +83,7 @@ impl Release {
 
 		let old_version = manifest.get_pretty_version()?;
 		println!("Current version: {}", &old_version);
-		manifest.set_version_suffix( &self.pre_release_suffix );
+		manifest.set_version_suffix( &self.pre_release_suffix )?;
 
 		manifest.save()?;
 

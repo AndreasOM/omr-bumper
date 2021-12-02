@@ -4,7 +4,7 @@ use git2::{
 	PushOptions,
 	RemoteCallbacks,
 //	Repository,
-	Signature,
+//	Signature,
 	Status,
 };
 
@@ -90,7 +90,7 @@ impl Repository {
 				};
 				let cwd = match std::env::current_dir() {
 					Ok( wd ) => wd,
-					Err( e ) => bail!("No current working directory found"),
+					Err( e ) => bail!("No current working directory found: {}", &e),
 				};
 //				dbg!(&repo.path());
 //				dbg!(&repo.workdir());
@@ -107,7 +107,7 @@ impl Repository {
 					// make them relative to repository root
 					let p = match p.strip_prefix( &rwd ) {
 						Ok( p ) => p,
-						Err( e ) => bail!("Error stripping {:?} from {:?}", &rwd, &p),
+						Err( e ) => bail!("Error stripping {:?} from {:?}: {}", &rwd, &p, &e),
 					};
 //					dbg!(&p);
 					index.add_path( &p )?;
@@ -211,7 +211,7 @@ pub fn tag(
 			None => bail!( "No repo open for tag" ),
 		}
 	}
-	pub fn fetch( &mut self ) -> anyhow::Result<(usize)> {
+	pub fn fetch( &mut self ) -> anyhow::Result<usize> {
 		match &self.repo {
 			Some( repo )	=> {
 				let remote_name = "origin";
@@ -254,8 +254,8 @@ pub fn tag(
 	pub fn rebase( &mut self ) -> anyhow::Result<()> {
 		match &self.repo {
 			Some( repo ) => {
-				let head = repo.head()?; // wrong, this is local HEAD, we want origin/HEAD
-				let upstream = repo.reference_to_annotated_commit( &head )?;
+//				let head = repo.head()?; // wrong, this is local HEAD, we want origin/HEAD
+//				let upstream = repo.reference_to_annotated_commit( &head )?;
 				let rv = repo.revparse( "origin/HEAD" )?;
 				let oho = match rv.from() {
 					Some( oho ) => oho,
@@ -340,7 +340,7 @@ pub fn rebase(
 		*/
 	}
 
-	pub fn push( &mut self ) -> anyhow::Result<(usize)> {
+	pub fn push( &mut self ) -> anyhow::Result<usize> {
 		match &self.repo {
 			Some( repo ) => {
 				let remote_name = "origin";
@@ -395,7 +395,7 @@ pub fn push<Str: AsRef<str> + IntoCString + Clone>(
 		}
 	}
 
-	pub fn push_tag( &mut self, tag: &str ) -> anyhow::Result<(usize)> {
+	pub fn push_tag( &mut self, tag: &str ) -> anyhow::Result<usize> {
 		match &self.repo {
 			Some( repo ) => {
 				let remote_name = "origin";

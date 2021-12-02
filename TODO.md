@@ -5,13 +5,22 @@
 
 ## TODO
 
+- [ ] Skip dirty repository check if `--allow-dirty`
+- [ ] Skip all git if `--skip-git`
+- [ ] Skip pushing if `--skip-push`
+- [ ] Skip tagggin if `--skip-tag`
+
 
 - [ ] Improve error handling
 - [ ] Cleanup status reporting
 - [ ] Improve crate/bin documentation
 
+- [ ] Fix usage of hardcode ssh/git key
+- [ ] Remove dead code, and comments
+
 ## DONE
 
+- [x] Fix all warnings
 - [x] Add command line options
 	- [x] Specify pre-release level (alpha/beta/[none])
 	- [x] Specify bump (patch/minor/major)
