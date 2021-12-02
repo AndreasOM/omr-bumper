@@ -722,7 +722,7 @@ dependencies = [
 
 [[package]]
 name = "omr-bumper"
-version = "0.2.4-dev"
+version = "0.2.4-alpha"
 dependencies = [
  "anyhow",
  "cargo",
