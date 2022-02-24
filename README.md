@@ -16,3 +16,16 @@ Does all the necessary preparation to have github build a release.
 	- Bumps the local version patch/minor/major
 	- Commits Cargo.toml
 	- Pushes to git
+
+
+## Note
+
+`"revspec 'origin/HEAD' not found"`
+
+The git interface is pretty complex.
+For them moment we use `origin/HEAD` to get the "correct" refspec.
+If you didn't create your local repository by cloning this will not exist.
+You can create it via `git symbolic-ref refs/remotes/origin/HEAD refs/remotes/origin/master`.
+This will be fixed in a future release.
+
+You can verify `origin/HEAD` exists via `git show-ref`.

@@ -260,7 +260,11 @@ pub fn tag(
 			Some( repo ) => {
 //				let head = repo.head()?; // wrong, this is local HEAD, we want origin/HEAD
 //				let upstream = repo.reference_to_annotated_commit( &head )?;
-				let rv = repo.revparse( "origin/HEAD" )?;
+				let rv = match repo.revparse( "origin/HEAD" ) {
+					Ok( rv ) => rv,
+					Err( e ) => bail!( "Error: {:?}", &e ),
+				};
+
 				let oho = match rv.from() {
 					Some( oho ) => oho,
 					None => bail!( "No origin/HEAD found!" ),
@@ -353,6 +357,8 @@ pub fn rebase(
 					Err( e )		=> bail!( "Couldn't find remote({}): {}", &remote_name, &e ),
 				};
 
+				dbg!(remote.name());
+
 				let mut cbs = RemoteCallbacks::new();
 				cbs.credentials(|url, username_from_url, allowed_types| { Repository::credentials_cb( url, username_from_url, allowed_types ) });
 				cbs.transfer_progress(|progress| {
@@ -399,6 +405,8 @@ pub fn push<Str: AsRef<str> + IntoCString + Clone>(
 					Err( e )		=> bail!( "Couldn't find remote({}): {}", &remote_name, &e ),
 				};
 
+				dbg!(remote.name());
+
 				let mut cbs = RemoteCallbacks::new();
 				cbs.credentials(|_url, username_from_url, _allowed_types| {
 //					dbg!(&username_from_url);
@@ -424,10 +432,15 @@ pub fn push<Str: AsRef<str> + IntoCString + Clone>(
 				opts.remote_callbacks( cbs );
 				let tag_ref = format!("refs/tags/{}", &tag);
 				println!("Pushing ref {}", &tag_ref);
-				remote.push(
+				match remote.push(
 					&[ &tag_ref ],
 					Some( &mut opts )
-				)?;
+				) {
+					Ok(()) => {},
+					Err( e ) => {
+						bail!("Error pushing ref to remote: {:?}", &e );
+					},
+				};
 //git push <corresponding remote> refs/tags/*:refs/tags/*	
 
 				/*

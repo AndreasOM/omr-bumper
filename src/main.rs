@@ -64,6 +64,11 @@ pub fn main() -> anyhow::Result<()> {
 						.help( "Skip tagging" )
 						.takes_value( false )
 					)
+					.arg( Arg::with_name( "path" )
+						.long( "path" )
+						.help( "The working tree path" )
+						.takes_value( true )
+					)
 					.get_matches();
 
 
@@ -75,6 +80,7 @@ pub fn main() -> anyhow::Result<()> {
 	let skip_git			= matches.is_present( "skip-git" );
 	let skip_push			= matches.is_present( "skip-push" );
 	let skip_tag			= matches.is_present( "skip-tag" );
+	let path				= matches.value_of( "path" ).unwrap_or( "." ).to_string();
 
 	if ![ "patch".to_string(), "minor".to_string(), "major".to_string() ].contains( &bump_level ) {
 		println!( "Error: Invalid bump level {} should be patch/minor/major", &bump_level );
@@ -88,6 +94,7 @@ pub fn main() -> anyhow::Result<()> {
 	println!( "Skip Git           : {}", if skip_git { "yes" } else { "no" } );
 	println!( "Skip Push          : {}", if skip_push { "yes" } else { "no" } );
 	println!( "Skip Tag           : {}", if skip_tag { "yes" } else { "no" } );
+	println!( "Path               : {}", path );
 
 
 	let mut release = Release::new();
@@ -98,6 +105,7 @@ pub fn main() -> anyhow::Result<()> {
 	release.set_skip_git( skip_git );
 	release.set_skip_push( skip_push );
 	release.set_skip_tag( skip_tag );
+	release.set_path( &path );
 
 //	dbg!( &release );
 

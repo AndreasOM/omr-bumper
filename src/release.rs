@@ -1,4 +1,9 @@
 
+use std::path::{
+	Path,
+	PathBuf,
+};
+
 use anyhow::*;
 
 use crate::cargo::Cargo;
@@ -20,6 +25,7 @@ pub struct Release {
 	skip_git:			bool,
 	skip_push:			bool,
 	skip_tag:			bool,
+	path:				PathBuf,
 }
 
 
@@ -32,6 +38,7 @@ impl Release {
 			skip_git:			false,
 			skip_push:			false,
 			skip_tag:			false,
+			path:				Path::new(".").to_path_buf(),
 		}
 	}
 
@@ -67,16 +74,26 @@ impl Release {
 		self.skip_tag = skip_tag;
 	}
 
+	pub fn set_path( &mut self, path: &str ) {
+		self.path = Path::new( path ).to_path_buf();
+	}
+
 	pub fn run( &self ) -> anyhow::Result<()> {
 
+
+
+		/* Note: use `--path [path]` instead
 		if false { // use repository in sub folder for testing
 			let root = std::path::Path::new(&std::env::current_dir()?).join("./automatic-octo-guacamole/");
 			std::env::set_current_dir(&root)?;
 		} else {
 
 		}
+		*/
 
+		std::env::set_current_dir( &self.path )?;
 		println!("Working in {:?}", std::env::current_dir()?);
+
 		// check if git is clean
 		let mut repo = Repository::new( "." );
 //		let mut repo = Repository::new( "./automatic-octo-guacamole/" );
