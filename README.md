@@ -1,5 +1,13 @@
 # omr-bumper
 
+
+## Warning:
+
+This is work in progress, and currently slightly broken.
+Still good enough for me.
+
+Feel free to open issues on github, and/or pull requests with fixes.
+
 ## About
 
 Does all the necessary preparation to have github build a release.
