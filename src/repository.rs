@@ -213,8 +213,9 @@ pub fn tag(
 		}
 	}
 
-	fn credentials_cb( _url: &str, username_from_url: Option<&str>, _allowed_types: git2::CredentialType ) -> Result<Cred, git2::Error> {
+	fn credentials_cb( url: &str, username_from_url: Option<&str>, _allowed_types: git2::CredentialType ) -> Result<Cred, git2::Error> {
 //		dbg!(&username_from_url);
+		dbg!(&url);
 		Cred::ssh_key(
 			username_from_url.unwrap(),
 			None,
@@ -245,6 +246,7 @@ pub fn tag(
 				});
 				let mut opts = FetchOptions::new();
 				opts.remote_callbacks( cbs );
+				dbg!(&remote.url());
 				remote.fetch(&["main"], Some( &mut opts ), None)?;
 				let stats = remote.stats();
 				println!("Fetched {} bytes.", stats.received_bytes());
