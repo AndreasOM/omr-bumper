@@ -281,7 +281,7 @@ impl Repository {
 	}
 
 	pub fn rebase(&mut self) -> anyhow::Result<()> {
-		self.git_cmd(&["fetch"]);
+		self.git_cmd(&["rebase"]);
 		/*
 		match &self.repo {
 			Some(repo) => {
