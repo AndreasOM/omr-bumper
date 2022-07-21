@@ -75,7 +75,7 @@ impl Repository {
 		}
 		self.git_cmd(&["status"]);
 //		self.git_cmd(&["commit", "-m", &format!("\"{}\"",message), &files.join(" ")]);
-		self.git_cmd(&["commit", "-m", &format!("\"{}\"",message)]);
+		self.git_cmd(&["commit", "-m", &message]);
 		self.git_cmd(&["status"]);
 
 /*
