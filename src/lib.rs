@@ -6,12 +6,10 @@
 //!
 //! Sensible pull-requests, and issues welcome at: (https://github.com/AndreasOM/omr-bumper)
 
-
 mod release;
-pub use release::Release as Release;
-
+pub use release::Release;
 
 mod cargo;
 mod manifest;
-mod repository;
-
+mod repository_cmdgit;
+use repository_cmdgit::Repository;
