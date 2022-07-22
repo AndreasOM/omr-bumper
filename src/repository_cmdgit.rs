@@ -1,11 +1,10 @@
 use std::path::Path;
+use std::process::Command;
 
 //use anyhow::*;
 use anyhow::anyhow;
 use anyhow::bail;
 use anyhow::Context;
-
-use std::process::Command;
 
 pub struct Repository {
 	path: String,
@@ -71,14 +70,14 @@ impl Repository {
 	pub fn commit(&mut self, files: &Vec<String>, message: &str) -> anyhow::Result<()> {
 		for f in files.iter() {
 			//let p = Path::new(&cwd).join(&f);
-			self.git_cmd(&["add",f]);
+			self.git_cmd(&["add", f]);
 		}
 		self.git_cmd(&["status"]);
-//		self.git_cmd(&["commit", "-m", &format!("\"{}\"",message), &files.join(" ")]);
+		//		self.git_cmd(&["commit", "-m", &format!("\"{}\"",message), &files.join(" ")]);
 		self.git_cmd(&["commit", "-m", &message]);
 		self.git_cmd(&["status"]);
 
-/*
+		/*
 		match &self.repo {
 			Some(repo) => {
 				/*
@@ -181,11 +180,10 @@ impl Repository {
 		*/
 
 		Ok(())
-
 	}
 
 	pub fn tag(&mut self, tag: &str, msg: &str) -> anyhow::Result<()> {
-		self.git_cmd(&["tag",tag,"-m", msg]);
+		self.git_cmd(&["tag", tag, "-m", msg]);
 		Ok(())
 		/*
 		match &self.repo {
@@ -218,26 +216,26 @@ impl Repository {
 		}
 		*/
 	}
-/*
-	fn credentials_cb(
-		url: &str,
-		username_from_url: Option<&str>,
-		_allowed_types: git2::CredentialType,
-	) -> Result<Cred, git2::Error> {
-		//		dbg!(&username_from_url);
-		dbg!(&url);
-		Cred::ssh_key(
-			username_from_url.unwrap(),
-			None,
-			std::path::Path::new(&format!(
-				"{}/.ssh/id_ed25519",
-				std::env::var("HOME").unwrap()
-			)),
-			//			std::path::Path::new(&format!("{}/.ssh/id_rsa", std::env::var("HOME").unwrap())),
-			None,
-		)
-	}
-*/
+	/*
+		fn credentials_cb(
+			url: &str,
+			username_from_url: Option<&str>,
+			_allowed_types: git2::CredentialType,
+		) -> Result<Cred, git2::Error> {
+			//		dbg!(&username_from_url);
+			dbg!(&url);
+			Cred::ssh_key(
+				username_from_url.unwrap(),
+				None,
+				std::path::Path::new(&format!(
+					"{}/.ssh/id_ed25519",
+					std::env::var("HOME").unwrap()
+				)),
+				//			std::path::Path::new(&format!("{}/.ssh/id_rsa", std::env::var("HOME").unwrap())),
+				None,
+			)
+		}
+	*/
 	pub fn fetch(&mut self) -> anyhow::Result<usize> {
 		self.git_cmd(&["fetch"]);
 		/*
@@ -426,7 +424,7 @@ impl Repository {
 	}
 
 	pub fn push_tag(&mut self, tag: &str) -> anyhow::Result<usize> {
-		self.git_cmd(&["push","origin", tag]);
+		self.git_cmd(&["push", "origin", tag]);
 		/*
 		match &self.repo {
 			Some(repo) => {
@@ -512,13 +510,11 @@ impl Repository {
 			.arg(&self.path)
 			.args(&args)
 			.output()
-			.with_context(|| {
-				format!("error running git `{args:?}`")
-			})?;
-//		trace!("git output = {:?}", output);
+			.with_context(|| format!("error running git `{args:?}`"))?;
+		//		trace!("git output = {:?}", output);
 		let stdout = Self::string_from_bytes(output.stdout)?;
 		if output.status.success() {
-			println!("{}",stdout);
+			println!("{}", stdout);
 			Ok(stdout)
 		} else {
 			let mut error = "error while running git:\n".to_string();
@@ -535,8 +531,8 @@ impl Repository {
 		}
 	}
 	fn string_from_bytes(bytes: Vec<u8>) -> anyhow::Result<String> {
-    	let stdout = String::from_utf8(bytes).context("cannot extract stderr")?;
-    	let stdout = stdout.trim();
-    	Ok(stdout.to_string())
+		let stdout = String::from_utf8(bytes).context("cannot extract stderr")?;
+		let stdout = stdout.trim();
+		Ok(stdout.to_string())
 	}
 }

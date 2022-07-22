@@ -21,6 +21,7 @@ pub struct Release {
 	skip_git:           bool,
 	skip_push:          bool,
 	skip_tag:           bool,
+	skip_all:           bool,
 	path:               PathBuf,
 }
 
@@ -33,6 +34,7 @@ impl Release {
 			skip_git:           false,
 			skip_push:          false,
 			skip_tag:           false,
+			skip_all:           false,
 			path:               Path::new(".").to_path_buf(),
 		}
 	}
@@ -68,6 +70,10 @@ impl Release {
 		self.skip_tag = skip_tag;
 	}
 
+	pub fn set_skip_all(&mut self, skip_all: bool) {
+		self.skip_all = skip_all;
+	}
+
 	pub fn set_path(&mut self, path: &str) {
 		self.path = Path::new(path).to_path_buf();
 	}
@@ -89,7 +95,7 @@ impl Release {
 		let mut repo = Repository::new(".");
 		//		let mut repo = Repository::new( "./automatic-octo-guacamole/" );
 
-		if !self.skip_git {
+		if !self.skip_git && !self.skip_all {
 			repo.open()?;
 			if !self.allow_dirty {
 				// skip dirty
@@ -113,25 +119,25 @@ impl Release {
 		// load the Cargo.toml
 		let mut manifest = Manifest::new("Cargo.toml");
 		manifest.load()?;
+		if !self.skip_all {
+			let old_version = manifest.get_pretty_version()?;
+			println!("Current version: {}", &old_version);
+			manifest.set_version_suffix(&self.pre_release_suffix)?;
 
-		let old_version = manifest.get_pretty_version()?;
-		println!("Current version: {}", &old_version);
-		manifest.set_version_suffix(&self.pre_release_suffix)?;
-
-		manifest.save()?;
-
+			manifest.save()?;
+		}
 		let mut cargo = Cargo::new(".");
 		cargo.open()?;
-		cargo.update_workspace()?;
-
-		//		panic!("STOP");
-
+		if !self.skip_all {
+			cargo.update_workspace()?;
+			//		panic!("STOP");
+		}
 		let release_version = manifest.get_pretty_version()?;
 		println!("Release version: {}", &release_version);
 
 		// dbg!(&doc);
 
-		if !self.skip_git {
+		if !self.skip_git && !self.skip_all {
 			let dirty = repo.get_dirty();
 
 			if dirty.len() > 0 {
@@ -191,21 +197,22 @@ impl Release {
 
 		println!("---- Post Release ----");
 
-		match self.bump_level {
-			BumpLevel::Patch => manifest.bump_patch_version()?,
-			BumpLevel::Minor => manifest.bump_minor_version()?,
-			BumpLevel::Major => manifest.bump_major_version()?,
-		};
+		if !self.skip_all {
+			match self.bump_level {
+				BumpLevel::Patch => manifest.bump_patch_version()?,
+				BumpLevel::Minor => manifest.bump_minor_version()?,
+				BumpLevel::Major => manifest.bump_major_version()?,
+			};
 
-		manifest.set_version_suffix("dev")?;
+			manifest.set_version_suffix("dev")?;
 
-		manifest.save()?;
-		cargo.update_workspace()?;
-
+			manifest.save()?;
+			cargo.update_workspace()?;
+		}
 		let new_version = manifest.get_pretty_version()?;
 		println!("New development version: {}", &new_version);
 
-		if !self.skip_git {
+		if !self.skip_git && !self.skip_all {
 			let mut files = Vec::new();
 			files.push("Cargo.toml".to_owned());
 			files.push("Cargo.lock".to_owned());
