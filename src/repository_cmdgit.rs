@@ -524,7 +524,7 @@ impl Repository {
 			Err(e) => bail!("Can not convert path to string"),
 		};
 
-		println!("git -C {} {}", &path, args.join(" "));
+		tracing::debug!("git -C {} {}", &path, args.join(" "));
 		let args: Vec<&str> = args.iter().map(|s| s.trim()).collect();
 		let output = Command::new("git")
 			.arg("-C")
@@ -535,7 +535,7 @@ impl Repository {
 		//		trace!("git output = {:?}", output);
 		let stdout = Self::string_from_bytes(output.stdout)?;
 		if output.status.success() {
-			println!("{}", stdout);
+			tracing::debug!("{}", stdout);
 			Ok(stdout)
 		} else {
 			let mut error = "error while running git:\n".to_string();

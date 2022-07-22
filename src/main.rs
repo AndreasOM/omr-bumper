@@ -19,6 +19,8 @@ use omr_bumper::Release;
 
 pub fn main() -> anyhow::Result<()> {
 	const VERSION: &'static str = env!("CARGO_PKG_VERSION");
+	
+	tracing_subscriber::fmt::init();
 
 	let matches = App::new("omr-bumper")
 		.version(VERSION)
