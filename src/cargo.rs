@@ -4,14 +4,16 @@ use cargo::ops::{self, UpdateOptions};
 use cargo::util::config::Config;
 use path_absolutize::*;
 
+use std::path::{Path, PathBuf};
+
 pub struct Cargo /*<'a>*/ {
-	path: String,
+	path: PathBuf,
 	cfg:  Option<Config>,
 	//	ws: Option< Workspace<'a> >,
 }
 
 impl Cargo /*<'a>*/ {
-	pub fn new(path: &str) -> Self {
+	pub fn new(path: &Path) -> Self {
 		Self {
 			path: path.to_owned(),
 			cfg:  None,

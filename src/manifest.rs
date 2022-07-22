@@ -2,13 +2,15 @@ use anyhow::bail;
 use semver::{Prerelease, Version};
 use toml_edit::{value, Document, Formatted, Item, Value};
 
+use std::path::{Path, PathBuf};
+
 pub struct Manifest {
-	path: String,
+	path: PathBuf,
 	doc:  Option<Document>,
 }
 
 impl Manifest {
-	pub fn new(path: &str) -> Self {
+	pub fn new(path: &Path) -> Self {
 		Self {
 			path: path.to_owned(),
 			doc:  None,
@@ -19,7 +21,7 @@ impl Manifest {
 		let toml = std::fs::read_to_string(&self.path)?;
 		let doc = match toml.parse::<Document>() {
 			Ok(doc) => doc,
-			Err(e) => bail!("Couldn't load manifest from >>{}<< {}", &self.path, &e),
+			Err(e) => bail!("Couldn't load manifest from >>{:?}<< {}", &self.path, &e),
 		};
 
 		self.doc = Some(doc);

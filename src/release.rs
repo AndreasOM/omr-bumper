@@ -189,7 +189,7 @@ impl Release {
 					self.step_git_show_dirty()?;
 				},
 				Step::CargoLoadManifest => {
-					let mut new_manifest = Manifest::new("Cargo.toml");
+					let mut new_manifest = Manifest::new(&self.path.join("Cargo.toml"));
 					new_manifest.load()?;
 					manifest = Some(new_manifest);
 					println!("Loaded manifest");
@@ -227,7 +227,7 @@ impl Release {
 					}
 				},
 				Step::CargoUpdateWorkspace => {
-					let mut cargo = Cargo::new(".");
+					let mut cargo = Cargo::new(&self.path);
 					cargo.open()?;
 					cargo.update_workspace()?;
 				},
