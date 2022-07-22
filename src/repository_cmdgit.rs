@@ -1,4 +1,4 @@
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use std::process::Command;
 
 //use anyhow::*;
@@ -7,12 +7,12 @@ use anyhow::bail;
 use anyhow::Context;
 
 pub struct Repository {
-	path: String,
+	path: PathBuf,
 	repo: Option<git2::Repository>,
 }
 
 impl Repository {
-	pub fn new(path: &str) -> Self {
+	pub fn new(path: &Path) -> Self {
 		Self {
 			path: path.to_owned(),
 			repo: None,
@@ -32,8 +32,24 @@ impl Repository {
 		Ok(())
 	}
 
-	pub fn get_dirty(&mut self) -> Vec<String> {
-		Vec::new() // :TODO:
+	pub fn get_dirty(&mut self) -> anyhow::Result<Vec<String>> {
+		// :HACK: This is super hacky, and very incomplete
+		let mut changed_files = Vec::new();
+		// Note: do not trim!
+		let changes = self.git_cmd(&["status", "--branch", "--porcelain"])?;
+		// let changes = changes.trim();
+		for c in changes.split("\n") {
+			// let c = c.trim();
+			if c.len() >= 4 {
+				//				eprintln!("Change: {}", &c);
+				match &c[0..2] {
+					"##" => println!(":TODO: branch status ignored {}", &c),
+					" M" => changed_files.push(c[2..].to_string()),
+					o => eprintln!("Unhandled status prefix {:?}", &o),
+				}
+			}
+		}
+		Ok(changed_files)
 
 		/*
 		match &self.repo {
@@ -503,11 +519,16 @@ impl Repository {
 	}
 
 	fn git_cmd(&self, args: &[&str]) -> anyhow::Result<String> {
-		println!("git -C {} {}", &self.path, args.join(" "));
+		let path = match self.path.clone().into_os_string().into_string() {
+			Ok(p) => p,
+			Err(e) => bail!("Can not convert path to string"),
+		};
+
+		println!("git -C {} {}", &path, args.join(" "));
 		let args: Vec<&str> = args.iter().map(|s| s.trim()).collect();
 		let output = Command::new("git")
 			.arg("-C")
-			.arg(&self.path)
+			.arg(&path)
 			.args(&args)
 			.output()
 			.with_context(|| format!("error running git `{args:?}`"))?;
@@ -532,7 +553,7 @@ impl Repository {
 	}
 	fn string_from_bytes(bytes: Vec<u8>) -> anyhow::Result<String> {
 		let stdout = String::from_utf8(bytes).context("cannot extract stderr")?;
-		let stdout = stdout.trim();
+		//		let stdout = stdout.trim();
 		Ok(stdout.to_string())
 	}
 }
