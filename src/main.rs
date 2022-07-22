@@ -29,7 +29,7 @@ pub fn main() -> anyhow::Result<()> {
 		.arg(
 			Arg::with_name("pre-release-suffix")
 				.long("pre-release-suffix")
-				.short("r")
+				.short('r')
 				.value_name("PRE_RELEASE_SUFFIX")
 				.help("Set the pre release suffix")
 				.takes_value(true),
@@ -37,7 +37,7 @@ pub fn main() -> anyhow::Result<()> {
 		.arg(
 			Arg::with_name("bump-level")
 				.long("bump-level")
-				.short("b")
+				.short('b')
 				.value_name("BUMP_LEVEL")
 				.help("Set the bump level [patch/minor/major]")
 				.takes_value(true),
