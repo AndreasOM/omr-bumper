@@ -1,8 +1,8 @@
+use std::path::{Path, PathBuf};
+
 use anyhow::bail;
 use semver::{Prerelease, Version};
 use toml_edit::{value, Document, Formatted, Item, Value};
-
-use std::path::{Path, PathBuf};
 
 pub struct Manifest {
 	path: PathBuf,
@@ -52,9 +52,9 @@ impl Manifest {
 		let fs = self.get_formatted_version()?;
 		//		dbg!(&fs);
 		let v = fs.value();
-		let version = Version::parse(&v).unwrap();
+		let version = Version::parse(v).unwrap();
 		//			dbg!(&version);
-		return Ok(version);
+		Ok(version)
 	}
 
 	pub fn get_pretty_version(&self) -> anyhow::Result<String> {
@@ -132,7 +132,7 @@ impl Manifest {
 		let old_version = self.get_version()?;
 		//		dbg!(&old_version);
 
-		let mut new_version = old_version.clone();
+		let mut new_version = old_version;//.clone();
 		new_version.pre = Prerelease::new(suffix).unwrap();
 		//		dbg!(&new_version);
 

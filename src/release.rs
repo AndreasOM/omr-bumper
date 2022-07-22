@@ -50,6 +50,12 @@ pub struct Release {
 	steps:              Vec<Step>,
 }
 
+impl Default for Release {
+	fn default() -> Self {
+		Release::new()
+	}
+}
+
 impl Release {
 	pub fn new() -> Self {
 		Self {
@@ -139,7 +145,7 @@ impl Release {
 
 		let dirty = repo.get_dirty()?;
 
-		if dirty.len() > 0 {
+		if !dirty.is_empty() {
 			println!("Dirty files:");
 			for d in dirty.iter() {
 				println!("{}", d);
@@ -157,7 +163,7 @@ impl Release {
 
 		let dirty = repo.get_dirty()?;
 
-		if dirty.len() > 0 {
+		if !dirty.is_empty() {
 			println!("Dirty files:");
 			for d in dirty.iter() {
 				println!("{}", d);
@@ -240,9 +246,12 @@ impl Release {
 					}
 				},
 				Step::GitCommitManifest(m) => {
+					/*
 					let mut files = Vec::new();
 					files.push("Cargo.toml".to_owned());
 					files.push("Cargo.lock".to_owned());
+					*/
+					let files = vec!["Cargo.toml".to_owned(),"Cargo.lock".to_owned()];
 					let msg = match m {
 						GitCommitMessage::BumpVersionForRelease => {
 							format!(
@@ -256,6 +265,7 @@ impl Release {
 								&release_version
 							)
 						},
+						#[allow(unreachable_patterns)]
 						o => format!(":TODO: {:?}", &o),
 					};
 
@@ -285,6 +295,7 @@ impl Release {
 					let mut repo = Repository::new(&self.path);
 					repo.push_tag(&release_version)?;
 				},
+				#[allow(unreachable_patterns)]
 				s => eprintln!("Step {:?} not handled yet", &s),
 			}
 		}

@@ -1,10 +1,10 @@
+use std::path::{Path, PathBuf};
+
 use anyhow::bail;
 use cargo::core::Workspace;
 use cargo::ops::{self, UpdateOptions};
 use cargo::util::config::Config;
 use path_absolutize::*;
-
-use std::path::{Path, PathBuf};
 
 pub struct Cargo /*<'a>*/ {
 	path: PathBuf,
@@ -27,7 +27,7 @@ impl Cargo /*<'a>*/ {
 		if let Some(cfg) = &self.cfg {
 			let p = std::path::Path::new(&self.path).join("Cargo.toml");
 			let p = p.absolutize()?;
-			let _ws = Workspace::new(&p, &cfg)?;
+			let _ws = Workspace::new(&p, cfg)?;
 			//			self.ws = Some( ws );
 			//			dbg!(&ws);
 			Ok(())
@@ -61,7 +61,7 @@ impl Cargo /*<'a>*/ {
 		if let Some(cfg) = &self.cfg {
 			let p = std::path::Path::new(&self.path).join("Cargo.toml");
 			let p = p.absolutize()?;
-			let ws = Workspace::new(&p, &cfg)?;
+			let ws = Workspace::new(&p, cfg)?;
 
 			let update_opts = UpdateOptions {
 				aggressive: false,
@@ -69,7 +69,7 @@ impl Cargo /*<'a>*/ {
 				to_update:  Vec::new(),
 				dry_run:    false,
 				workspace:  true,
-				config:     &cfg,
+				config:     cfg,
 			};
 			//			dbg!(&ws);
 			ops::update_lockfile(&ws, &update_opts)?;
