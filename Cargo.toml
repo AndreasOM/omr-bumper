@@ -1,6 +1,6 @@
 [package]
 name = 	 	"omr-bumper"
-version =	"0.3.7-dev" # :TODO: bump once released
+version =	"0.3.7-alpha" # :TODO: bump once released
 edition = 	"2021"
 
 license = "MIT"
@@ -25,3 +25,5 @@ semver = "1.0"
 cargo = "0.57.0"
 path-absolutize = "3.0.11"
 clap = "2.34.0"
+tracing = "0.1.35"
+tracing-subscriber = { version = "0.3.15", features = ["env-filter"] }
