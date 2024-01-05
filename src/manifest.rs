@@ -79,8 +79,8 @@ impl Manifest {
 					let od = fs.decor();
 					match (od.prefix(), od.suffix()) {
 						(Some(p), Some(s)) => {
-							d.set_prefix(p);
-							d.set_suffix(s);
+							d.set_prefix(p.clone());
+							d.set_suffix(s.clone());
 						},
 						_ => {},
 					}

@@ -64,8 +64,9 @@ impl Cargo /*<'a>*/ {
 			let ws = Workspace::new(&p, cfg)?;
 
 			let update_opts = UpdateOptions {
-				aggressive: false,
+				// aggressive: false,
 				precise:    None,
+				recursive: true,
 				to_update:  Vec::new(),
 				dry_run:    false,
 				workspace:  true,

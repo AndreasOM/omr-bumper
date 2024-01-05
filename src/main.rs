@@ -14,88 +14,55 @@
 //!		- Pushes to git
 
 use anyhow::bail;
-use clap::{App, Arg};
+use clap::Parser;
 use omr_bumper::Release;
 
+const VERSION: &str = env!("CARGO_PKG_VERSION");
+
+#[derive(Parser)]
+#[command(name = "omr-bumper")]
+#[command(author = "Andreas N. <andreas@omni-mad.com")]
+#[command(version = VERSION)]
+#[command(about = "Bump version, and push to git with tag", long_about = None)]
+struct Cli {
+	#[arg(short='r',long)]
+	pre_release_suffix: Option<String>,
+	#[arg(short='b',long)]
+	bump_level: Option<String>,
+	#[arg(long)]
+	allow_dirty: bool,
+	#[arg(long)]
+	skip_git: bool,
+	#[arg(long)]
+	skip_push: bool,
+	#[arg(long)]
+	skip_tag: bool,
+	#[arg(long)]
+	skip_all: bool,
+	#[arg(long)]
+	path: Option<String>,
+
+}
+
 pub fn main() -> anyhow::Result<()> {
-	const VERSION: &str = env!("CARGO_PKG_VERSION");
 
 	tracing_subscriber::fmt::init();
 
-	let matches = App::new("omr-bumper")
-		.version(VERSION)
-		.author("Andreas N. <andreas@omni-mad.com")
-		.about("Bump version, and push to git with tag")
-		.arg(
-			Arg::with_name("pre-release-suffix")
-				.long("pre-release-suffix")
-				.short('r')
-				.value_name("PRE_RELEASE_SUFFIX")
-				.help("Set the pre release suffix")
-				.takes_value(true),
-		)
-		.arg(
-			Arg::with_name("bump-level")
-				.long("bump-level")
-				.short('b')
-				.value_name("BUMP_LEVEL")
-				.help("Set the bump level [patch/minor/major]")
-				.takes_value(true),
-		)
-		.arg(
-			Arg::with_name("allow-dirty")
-				.long("allow-dirty")
-				.help("Allow running on dirty repository")
-				.takes_value(false),
-		)
-		.arg(
-			Arg::with_name("skip-git")
-				.long("skip-git")
-				.help("Skip ALL git steps")
-				.takes_value(false),
-		)
-		.arg(
-			Arg::with_name("skip-push")
-				.long("skip-push")
-				.help("Skip pushing to origin")
-				.takes_value(false),
-		)
-		.arg(
-			Arg::with_name("skip-tag")
-				.long("skip-tag")
-				.help("Skip tagging")
-				.takes_value(false),
-		)
-		.arg(
-			Arg::with_name("skip-all")
-				.long("skip-all")
-				.help("Skip all steps, that are not explicitely requested")
-				.takes_value(false),
-		)
-		.arg(
-			Arg::with_name("path")
-				.long("path")
-				.help("The working tree path")
-				.takes_value(true),
-		)
-		.get_matches();
-
-	//	dbg!( &matches );
-
-	let pre_release_suffix = matches
-		.value_of("pre-release-suffix")
-		.unwrap_or("alpha")
+	let cli = Cli::parse();
+	let pre_release_suffix = cli
+		.pre_release_suffix
+		.unwrap_or( String::from("alpha"))
 		.to_string();
-	let bump_level = matches
-		.value_of("bump-level")
-		.unwrap_or("patch")
+	let bump_level = cli
+		.bump_level
+		.unwrap_or(String::from("patch"))
 		.to_string();
-	let allow_dirty = matches.is_present("allow-dirty");
-	let skip_git = matches.is_present("skip-git");
-	let skip_push = matches.is_present("skip-push");
-	let skip_tag = matches.is_present("skip-tag");
-	let skip_all = matches.is_present("skip-all");
-	let path = matches.value_of("path").unwrap_or(".").to_string();
+	let allow_dirty = cli.allow_dirty;
+	let skip_git = cli.skip_git;
+	let skip_push = cli.skip_push;
+	let skip_tag = cli.skip_tag;
+	let skip_all = cli.skip_all;
+	let path = cli.path.unwrap_or(String::from(".")).to_string();
 
 	if ![
 		"patch".to_string(),
