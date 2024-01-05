@@ -251,7 +251,7 @@ impl Release {
 					files.push("Cargo.toml".to_owned());
 					files.push("Cargo.lock".to_owned());
 					*/
-					let files = vec!["Cargo.toml".to_owned(),"Cargo.lock".to_owned()];
+					let files = vec!["Cargo.toml".to_owned(), "Cargo.lock".to_owned()];
 					let msg = match m {
 						GitCommitMessage::BumpVersionForRelease => {
 							format!(

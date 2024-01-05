@@ -132,7 +132,7 @@ impl Manifest {
 		let old_version = self.get_version()?;
 		//		dbg!(&old_version);
 
-		let mut new_version = old_version;//.clone();
+		let mut new_version = old_version; //.clone();
 		new_version.pre = Prerelease::new(suffix).unwrap();
 		//		dbg!(&new_version);
 

@@ -65,12 +65,12 @@ impl Cargo /*<'a>*/ {
 
 			let update_opts = UpdateOptions {
 				// aggressive: false,
-				precise:    None,
+				precise:   None,
 				recursive: true,
-				to_update:  Vec::new(),
-				dry_run:    false,
-				workspace:  true,
-				config:     cfg,
+				to_update: Vec::new(),
+				dry_run:   false,
+				workspace: true,
+				config:    cfg,
 			};
 			//			dbg!(&ws);
 			ops::update_lockfile(&ws, &update_opts)?;

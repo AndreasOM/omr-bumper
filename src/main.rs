@@ -25,38 +25,33 @@ const VERSION: &str = env!("CARGO_PKG_VERSION");
 #[command(version = VERSION)]
 #[command(about = "Bump version, and push to git with tag", long_about = None)]
 struct Cli {
-	#[arg(short='r',long)]
+	#[arg(short = 'r', long)]
 	pre_release_suffix: Option<String>,
-	#[arg(short='b',long)]
-	bump_level: Option<String>,
+	#[arg(short = 'b', long)]
+	bump_level:         Option<String>,
 	#[arg(long)]
-	allow_dirty: bool,
+	allow_dirty:        bool,
 	#[arg(long)]
-	skip_git: bool,
+	skip_git:           bool,
 	#[arg(long)]
-	skip_push: bool,
+	skip_push:          bool,
 	#[arg(long)]
-	skip_tag: bool,
+	skip_tag:           bool,
 	#[arg(long)]
-	skip_all: bool,
+	skip_all:           bool,
 	#[arg(long)]
-	path: Option<String>,
-
+	path:               Option<String>,
 }
 
 pub fn main() -> anyhow::Result<()> {
-
 	tracing_subscriber::fmt::init();
 
 	let cli = Cli::parse();
 	let pre_release_suffix = cli
 		.pre_release_suffix
-		.unwrap_or( String::from("alpha"))
+		.unwrap_or(String::from("alpha"))
 		.to_string();
-	let bump_level = cli
-		.bump_level
-		.unwrap_or(String::from("patch"))
-		.to_string();
+	let bump_level = cli.bump_level.unwrap_or(String::from("patch")).to_string();
 	let allow_dirty = cli.allow_dirty;
 	let skip_git = cli.skip_git;
 	let skip_push = cli.skip_push;
