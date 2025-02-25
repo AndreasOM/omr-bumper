@@ -35,6 +35,7 @@ impl Repository {
 				match &c[0..2] {
 					"##" => println!(":TODO: branch status ignored {}", &c),
 					" M" => changed_files.push(c[2..].to_string()),
+					"??" => println!("Untracked file (not considered dirty): {}", &c[3..]),
 					o => eprintln!("Unhandled status prefix {:?}", &o),
 				}
 			}
