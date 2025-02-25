@@ -45,13 +45,26 @@ jobs:
           rustup update stable
           rustup target add ${{ matrix.target }}
           rustup default stable
+          
+          # Install nightly for unstable features if needed for cross-compilation
+          if [[ "${{ matrix.os }}" == "macos-latest" && "${{ matrix.target }}" == "x86_64-apple-darwin" ]]; then
+            rustup toolchain install nightly
+            rustup component add rust-src --toolchain nightly
+          fi
       
       - name: Install dependencies (macOS)
         if: matrix.os == 'macos-latest'
         run: |
-          brew install openssl@3 lld llvm
-          echo "OPENSSL_DIR=$(brew --prefix openssl@3)" >> "$GITHUB_ENV"
+          brew install openssl@3 lld llvm pkg-config
+          
+          # Get OpenSSL path
+          OPENSSL_DIR=$(brew --prefix openssl@3)
+          echo "OPENSSL_DIR=$OPENSSL_DIR" >> "$GITHUB_ENV"
+          echo "OPENSSL_ROOT_DIR=$OPENSSL_DIR" >> "$GITHUB_ENV"
+          echo "OPENSSL_INCLUDE_DIR=$OPENSSL_DIR/include" >> "$GITHUB_ENV"
+          echo "OPENSSL_LIB_DIR=$OPENSSL_DIR/lib" >> "$GITHUB_ENV"
           echo "LIBRARY_PATH=$(brew --prefix)/lib" >> "$GITHUB_ENV"
+          echo "PKG_CONFIG_PATH=$OPENSSL_DIR/lib/pkgconfig" >> "$GITHUB_ENV"
           
           # Set SDK paths for both native and cross builds
           echo "SDKROOT=$(xcrun -sdk macosx --show-sdk-path)" >> "$GITHUB_ENV"
@@ -61,6 +74,11 @@ jobs:
           if [[ "${{ matrix.target }}" == "x86_64-apple-darwin" ]]; then
             echo "Setup for cross-compiling to Intel x86_64 from Apple Silicon"
             echo "ARCHFLAGS=-arch x86_64" >> "$GITHUB_ENV"
+            # Explicitly install x86_64 OpenSSL via homebrew for cross-compilation
+            echo "LDFLAGS=-L$OPENSSL_DIR/lib -L$(brew --prefix)/lib" >> "$GITHUB_ENV"
+            echo "CPPFLAGS=-I$OPENSSL_DIR/include" >> "$GITHUB_ENV"
+            # Link against both architectures if possible
+            echo "RUSTFLAGS=-C target-feature=+crt-static -L $OPENSSL_DIR/lib" >> "$GITHUB_ENV"
           fi
           
       - name: Install dependencies (Windows)
@@ -86,12 +104,25 @@ jobs:
         timeout-minutes: 30  # Increase timeout for long builds
         run: |
           if [[ "${{ matrix.os }}" == "macos-latest" ]]; then
-            # For macOS, set target-specific flags
+            echo "Current environment variables for debugging:"
+            env | sort
+            
             if [[ "${{ matrix.target }}" == "x86_64-apple-darwin" ]]; then
-              # Cross-compile from ARM to Intel
-              RUSTFLAGS="-C target-feature=+crt-static" cargo build --release --target ${{ matrix.target }}
+              echo "Building for x86_64-apple-darwin (Intel) on Apple Silicon..."
+              
+              # Try to find the libssl/libcrypto in the path
+              find $OPENSSL_DIR -name "libssl.*" || echo "libssl not found"
+              find $OPENSSL_DIR -name "libcrypto.*" || echo "libcrypto not found"
+              
+              # Cross-compile with explicit linking to OpenSSL
+              # Use nightly for the advanced features
+              rustup run nightly cargo build --release --target ${{ matrix.target }} \
+                --verbose \
+                -Z build-std=panic_abort,std \
+                -Z build-std-features=panic_immediate_abort
             else
               # Native ARM64 build
+              echo "Building for aarch64-apple-darwin (ARM64) natively..."
               cargo build --release --target ${{ matrix.target }}
             fi
           else
