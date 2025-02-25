@@ -3,12 +3,12 @@ use std::path::{Path, PathBuf};
 use anyhow::bail;
 use cargo::core::Workspace;
 use cargo::ops::{self, UpdateOptions};
-use cargo::util::config::Config;
+use cargo::util::context::GlobalContext;
 use path_absolutize::*;
 
 pub struct Cargo /*<'a>*/ {
 	path: PathBuf,
-	cfg:  Option<Config>,
+	cfg:  Option<GlobalContext>,
 	//	ws: Option< Workspace<'a> >,
 }
 
@@ -22,7 +22,7 @@ impl Cargo /*<'a>*/ {
 	}
 
 	pub fn open(&mut self) -> anyhow::Result<()> {
-		let cfg = Config::default()?;
+		let cfg = GlobalContext::default()?;
 		self.cfg = Some(cfg);
 		if let Some(cfg) = &self.cfg {
 			let p = std::path::Path::new(&self.path).join("Cargo.toml");
@@ -70,7 +70,7 @@ impl Cargo /*<'a>*/ {
 				to_update: Vec::new(),
 				dry_run:   false,
 				workspace: true,
-				config:    cfg,
+				gctx:      cfg,
 			};
 			//			dbg!(&ws);
 			ops::update_lockfile(&ws, &update_opts)?;
