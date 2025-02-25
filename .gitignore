@@ -15,3 +15,7 @@
 # already existing elements were commented out
 
 /target
+
+# Test repositories
+/tests/**/.git/
+/tests/**/remote/
