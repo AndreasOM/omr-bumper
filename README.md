@@ -1,22 +1,32 @@
 # omr-bumper
 
+A tool to automate version bumping and release preparation for Rust projects.
 
-## Warning:
+## Installation
 
-This is work in progress, and currently slightly broken.
-Still good enough for me.
+### Using cargo-binstall
 
-Feel free to open issues on github, and/or pull requests with fixes.
+The easiest way to install omr-bumper is with [cargo-binstall](https://github.com/cargo-bins/cargo-binstall):
+
+```bash
+cargo binstall omr-bumper
+```
+
+### Using cargo
+
+```bash
+cargo install omr-bumper
+```
 
 ## About
 
-Does all the necessary preparation to have github build a release.
+Does all the necessary preparation to have GitHub build a release.
 
 - Prepare release
 	- Checks workspace/git is clean
 	- Removes -dev from version, and replaces by alpha/beta/[none]
 	- Update Cargo.lock `cargo update --workspace --dry-run --verbose`
-	- Commmits Cargo.toml (and other files as needed)
+	- Commits Cargo.toml (and other files as needed)
 	- Pushes to git
 	- Tags the release
 	- Pushes the tag
@@ -25,6 +35,13 @@ Does all the necessary preparation to have github build a release.
 	- Commits Cargo.toml
 	- Pushes to git
 
+## CI/CD
+
+The project uses GitHub Actions workflows for:
+- Publishing to crates.io on tag push
+- Building binaries for multiple platforms (Linux, macOS, Windows)
+- Creating GitHub releases with change logs
+- Generating cargo-binstall metadata
 
 ## Note
 

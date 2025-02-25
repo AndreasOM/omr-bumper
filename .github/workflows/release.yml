@@ -1,0 +1,193 @@
+name: Build and Release
+
+on:
+  push:
+    tags:
+      - "*-alpha"
+      - "*-beta"
+      - "[0-9]+.[0-9]+.[0-9]+"
+
+jobs:
+  build:
+    name: Build on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            target: x86_64-unknown-linux-gnu
+            artifact_name: omr-bumper
+            asset_name: omr-bumper-linux-x86_64
+          - os: windows-latest
+            target: x86_64-pc-windows-msvc
+            artifact_name: omr-bumper.exe
+            asset_name: omr-bumper-windows-x86_64.exe
+          - os: macos-latest
+            target: x86_64-apple-darwin
+            artifact_name: omr-bumper
+            asset_name: omr-bumper-macos-x86_64
+          - os: macos-latest
+            target: aarch64-apple-darwin
+            artifact_name: omr-bumper
+            asset_name: omr-bumper-macos-aarch64
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Rust
+        run: |
+          rustup update stable
+          rustup target add ${{ matrix.target }}
+          rustup default stable
+
+      - name: Build
+        run: cargo build --release --target ${{ matrix.target }}
+
+      - name: Prepare artifact
+        shell: bash
+        run: |
+          mkdir -p dist
+          if [ "${{ matrix.os }}" = "windows-latest" ]; then
+            cp "target/${{ matrix.target }}/release/${{ matrix.artifact_name }}" "dist/${{ matrix.asset_name }}"
+          else
+            cp "target/${{ matrix.target }}/release/${{ matrix.artifact_name }}" "dist/${{ matrix.asset_name }}"
+            chmod +x "dist/${{ matrix.asset_name }}"
+          fi
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.asset_name }}
+          path: dist/${{ matrix.asset_name }}
+          if-no-files-found: error
+
+  release:
+    name: Create GitHub Release
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: dist
+
+      - name: Get version from tag
+        id: get_version
+        run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> "$GITHUB_OUTPUT"
+
+      - name: Get tag type
+        id: get_tag_type
+        run: |
+          TAG="${{ steps.get_version.outputs.VERSION }}"
+          if [[ "$TAG" == *-alpha ]]; then
+            echo "TAG_TYPE=alpha" >> "$GITHUB_OUTPUT"
+          elif [[ "$TAG" == *-beta ]]; then
+            echo "TAG_TYPE=beta" >> "$GITHUB_OUTPUT"
+          else
+            echo "TAG_TYPE=release" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Get previous tag
+        id: get_previous_tag
+        run: |
+          TAG="${{ steps.get_version.outputs.VERSION }}"
+          TAG_TYPE="${{ steps.get_tag_type.outputs.TAG_TYPE }}"
+          
+          if [[ "$TAG_TYPE" == "alpha" ]]; then
+            PREV_TAG=$(git tag --sort=-version:refname | grep -E '.*-alpha$' | grep -v "$TAG" | head -n 1)
+          elif [[ "$TAG_TYPE" == "beta" ]]; then
+            PREV_TAG=$(git tag --sort=-version:refname | grep -E '.*-beta$' | grep -v "$TAG" | head -n 1)
+          else
+            PREV_TAG=$(git tag --sort=-version:refname | grep -E '^[0-9]+\.[0-9]+\.[0-9]+$' | grep -v "$TAG" | head -n 1)
+          fi
+          
+          echo "PREVIOUS_TAG=$PREV_TAG" >> "$GITHUB_OUTPUT"
+
+      - name: Generate changelog
+        id: changelog
+        run: |
+          PREV_TAG="${{ steps.get_previous_tag.outputs.PREVIOUS_TAG }}"
+          VERSION="${{ steps.get_version.outputs.VERSION }}"
+          {
+            echo "CHANGELOG<<EOF"
+            if [ -z "$PREV_TAG" ]; then
+              # If no previous tag exists, use all commits
+              git log --pretty=format:"- %s"
+            else
+              # Generate changelog between tags
+              git log --pretty=format:"- %s" "${PREV_TAG}..${VERSION}"
+            fi
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Create release
+        id: create_release
+        uses: softprops/action-gh-release@v2.2.1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          tag_name: ${{ steps.get_version.outputs.VERSION }}
+          name: Release ${{ steps.get_version.outputs.VERSION }}
+          draft: false
+          prerelease: ${{ steps.get_tag_type.outputs.TAG_TYPE != 'release' }}
+          body: |
+            # Changes since ${{ steps.get_previous_tag.outputs.PREVIOUS_TAG }}
+            
+            ${{ steps.changelog.outputs.CHANGELOG }}
+          files: |
+            dist/**/*
+
+  # Generate cargo-binstall metadata
+  binstall:
+    name: Generate cargo-binstall metadata
+    needs: release
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Get version from tag
+        id: get_version
+        run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> "$GITHUB_OUTPUT"
+      
+      - name: Generate cargo-binstall metadata
+        run: |
+          cat > binstall.json << EOF
+          {
+            "package_id": "omr-bumper",
+            "version": "${{ steps.get_version.outputs.VERSION }}",
+            "artifacts": {
+              "x86_64-unknown-linux-gnu": {
+                "kind": "executable",
+                "url": "https://github.com/${{ github.repository }}/releases/download/${{ steps.get_version.outputs.VERSION }}/omr-bumper-linux-x86_64",
+                "name": "omr-bumper"
+              },
+              "x86_64-pc-windows-msvc": {
+                "kind": "executable",
+                "url": "https://github.com/${{ github.repository }}/releases/download/${{ steps.get_version.outputs.VERSION }}/omr-bumper-windows-x86_64.exe",
+                "name": "omr-bumper.exe"
+              },
+              "x86_64-apple-darwin": {
+                "kind": "executable",
+                "url": "https://github.com/${{ github.repository }}/releases/download/${{ steps.get_version.outputs.VERSION }}/omr-bumper-macos-x86_64",
+                "name": "omr-bumper"
+              },
+              "aarch64-apple-darwin": {
+                "kind": "executable",
+                "url": "https://github.com/${{ github.repository }}/releases/download/${{ steps.get_version.outputs.VERSION }}/omr-bumper-macos-aarch64",
+                "name": "omr-bumper"
+              }
+            }
+          }
+          EOF
+          
+      - name: Upload binstall.json
+        uses: softprops/action-gh-release@v2.2.1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          tag_name: ${{ steps.get_version.outputs.VERSION }}
+          files: binstall.json
