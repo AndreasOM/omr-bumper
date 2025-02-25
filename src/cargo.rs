@@ -25,12 +25,50 @@ impl Cargo /*<'a>*/ {
 		let cfg = GlobalContext::default()?;
 		self.cfg = Some(cfg);
 		if let Some(cfg) = &self.cfg {
-			let p = std::path::Path::new(&self.path).join("Cargo.toml");
-			let p = p.absolutize()?;
-			let _ws = Workspace::new(&p, cfg)?;
-			//			self.ws = Some( ws );
-			//			dbg!(&ws);
-			Ok(())
+			let manifest_path = std::path::Path::new(&self.path).join("Cargo.toml");
+			let p = manifest_path.absolutize()?;
+
+			// Check if Cargo.toml exists
+			if !manifest_path.exists() {
+				bail!("Cargo.toml not found at: {}", manifest_path.display());
+			}
+
+			// Check if Cargo.lock exists
+			let lock_path = std::path::Path::new(&self.path).join("Cargo.lock");
+			if !lock_path.exists() {
+				bail!("Cargo.lock not found at: {}. Run 'cargo build' in the repository to generate it.", lock_path.display());
+			}
+
+			// Try to open and parse Cargo.lock to verify it's valid
+			match std::fs::read_to_string(&lock_path) {
+				Ok(contents) => {
+					// Basic check if it looks like a valid Cargo.lock
+					if !contents.contains("[package]")
+						&& !contents.contains("version =")
+						&& !contents.trim().is_empty()
+					{
+						bail!("Cargo.lock at {} appears to be malformed. Run 'cargo build' to regenerate it.", lock_path.display());
+					}
+				},
+				Err(e) => {
+					bail!(
+						"Failed to read Cargo.lock at {}: {}",
+						lock_path.display(),
+						e
+					);
+				},
+			}
+
+			// Try to create a workspace - this will validate both Cargo.toml and Cargo.lock
+			match Workspace::new(&p, cfg) {
+				Ok(_ws) => {
+					// Success!
+					Ok(())
+				},
+				Err(e) => {
+					bail!("Failed to create Cargo workspace: {}. Make sure both Cargo.toml and Cargo.lock are valid.", e);
+				},
+			}
 		} else {
 			bail!("No Config");
 		}
@@ -59,9 +97,25 @@ impl Cargo /*<'a>*/ {
 		//		let cfg = WorkspaceRootConfig::new(".")
 		//		ops::update_lockfile(&ws, &update_opts)?;
 		if let Some(cfg) = &self.cfg {
-			let p = std::path::Path::new(&self.path).join("Cargo.toml");
-			let p = p.absolutize()?;
-			let ws = Workspace::new(&p, cfg)?;
+			let manifest_path = std::path::Path::new(&self.path).join("Cargo.toml");
+			let p = manifest_path.absolutize()?;
+
+			// Check if Cargo.toml exists
+			if !manifest_path.exists() {
+				bail!("Cargo.toml not found at: {}", manifest_path.display());
+			}
+
+			// Check if Cargo.lock exists
+			let lock_path = std::path::Path::new(&self.path).join("Cargo.lock");
+			if !lock_path.exists() {
+				bail!("Cargo.lock not found at: {}. Run 'cargo build' in the repository to generate it.", lock_path.display());
+			}
+
+			// Create workspace
+			let ws = match Workspace::new(&p, cfg) {
+				Ok(ws) => ws,
+				Err(e) => bail!("Failed to create Cargo workspace: {}. Make sure both Cargo.toml and Cargo.lock are valid.", e)
+			};
 
 			let update_opts = UpdateOptions {
 				// aggressive: false,
@@ -72,10 +126,15 @@ impl Cargo /*<'a>*/ {
 				workspace: true,
 				gctx:      cfg,
 			};
-			//			dbg!(&ws);
-			ops::update_lockfile(&ws, &update_opts)?;
-			println!("Updated Cargo.lock for {}", &p.display());
-			Ok(())
+
+			// Update lockfile
+			match ops::update_lockfile(&ws, &update_opts) {
+				Ok(_) => {
+					println!("Updated Cargo.lock for {}", &p.display());
+					Ok(())
+				},
+				Err(e) => bail!("Failed to update Cargo.lock: {}", e),
+			}
 		} else {
 			bail!("No Config");
 		}

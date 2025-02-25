@@ -143,6 +143,23 @@ impl Release {
 
 		println!("Checking if repository is clean...");
 
+		// First check if Cargo.toml and Cargo.lock exist in the repository
+		let manifest_path = self.path.join("Cargo.toml");
+		if !manifest_path.exists() {
+			println!(
+				"ERROR: Cargo.toml not found at: {}",
+				manifest_path.display()
+			);
+			return Ok(false);
+		}
+
+		let lock_path = self.path.join("Cargo.lock");
+		if !lock_path.exists() {
+			println!("ERROR: Cargo.lock not found at: {}", lock_path.display());
+			println!("Run 'cargo build' in the repository to generate it first.");
+			return Ok(false);
+		}
+
 		let dirty = repo.get_dirty()?;
 
 		if !dirty.is_empty() {
@@ -153,7 +170,7 @@ impl Release {
 			//bail!("Repository is dirty");
 			return Ok(false);
 		}
-		println!("Repositiory is clean (enough)");
+		println!("Repository is clean (enough)");
 		Ok(true)
 	}
 	fn step_git_show_dirty(&self) -> anyhow::Result<()> {
