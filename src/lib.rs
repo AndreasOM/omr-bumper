@@ -11,5 +11,7 @@ pub use release::Release;
 
 mod cargo;
 mod manifest;
+// #[allow(dead_code)]
+// mod repository;
 mod repository_cmdgit;
 use repository_cmdgit::Repository;

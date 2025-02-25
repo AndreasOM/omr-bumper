@@ -2148,7 +2148,6 @@ dependencies = [
  "anyhow",
  "cargo",
  "clap",
- "git2",
  "path-absolutize",
  "semver",
  "toml_edit 0.21.1",

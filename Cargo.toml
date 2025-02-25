@@ -19,7 +19,6 @@ path = "src/main.rs"
 
 [dependencies]
 anyhow = "~1.0.79"
-git2 = "0.18.1"
 toml_edit = "0.21.0"
 semver = "1.0"
 cargo = "0.76.0"

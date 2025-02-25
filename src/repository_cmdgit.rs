@@ -8,28 +8,17 @@ use anyhow::Context;
 
 pub struct Repository {
 	path: PathBuf,
-	repo: Option<git2::Repository>,
 }
 
 impl Repository {
 	pub fn new(path: &Path) -> Self {
 		Self {
 			path: path.to_owned(),
-			repo: None,
 		}
 	}
 
 	#[allow(dead_code)]
 	pub fn open(&mut self) -> anyhow::Result<()> {
-		let repo = match git2::Repository::discover(&self.path) {
-			Ok(repo) => repo,
-			Err(e) => bail!("failed to open: {}", e),
-		};
-
-		//		dbg!(&repo.state());
-
-		self.repo = Some(repo);
-
 		Ok(())
 	}
 
