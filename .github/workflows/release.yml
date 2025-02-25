@@ -5,6 +5,7 @@ on:
     tags:
       - "*-alpha"
       - "*-beta"
+      - "*-test"  # Added for testing the workflow without affecting crates.io
       - "[0-9]+.[0-9]+.[0-9]+"
 
 jobs:
@@ -182,6 +183,8 @@ jobs:
             echo "TAG_TYPE=alpha" >> "$GITHUB_OUTPUT"
           elif [[ "$TAG" == *-beta ]]; then
             echo "TAG_TYPE=beta" >> "$GITHUB_OUTPUT"
+          elif [[ "$TAG" == *-test ]]; then
+            echo "TAG_TYPE=test" >> "$GITHUB_OUTPUT"
           else
             echo "TAG_TYPE=release" >> "$GITHUB_OUTPUT"
           fi
@@ -196,6 +199,8 @@ jobs:
             PREV_TAG=$(git tag --sort=-version:refname | grep -E '.*-alpha$' | grep -v "$TAG" | head -n 1)
           elif [[ "$TAG_TYPE" == "beta" ]]; then
             PREV_TAG=$(git tag --sort=-version:refname | grep -E '.*-beta$' | grep -v "$TAG" | head -n 1)
+          elif [[ "$TAG_TYPE" == "test" ]]; then
+            PREV_TAG=$(git tag --sort=-version:refname | grep -E '.*-test$' | grep -v "$TAG" | head -n 1)
           else
             PREV_TAG=$(git tag --sort=-version:refname | grep -E '^[0-9]+\.[0-9]+\.[0-9]+$' | grep -v "$TAG" | head -n 1)
           fi
