@@ -14,21 +14,22 @@ jobs:
     strategy:
       matrix:
         include:
-          - os: ubuntu-latest
-            target: x86_64-unknown-linux-gnu
-            artifact_name: omr-bumper
-            asset_name: omr-bumper-linux-x86_64
-          - os: windows-latest
-            target: x86_64-pc-windows-msvc
-            artifact_name: omr-bumper.exe
-            asset_name: omr-bumper-windows-x86_64.exe
-          # macOS ARM64 (native build on Apple Silicon runner)
-          - os: macos-latest
-            target: aarch64-apple-darwin
-            artifact_name: omr-bumper
-            asset_name: omr-bumper-macos-aarch64
-            comment: "Native build on Apple Silicon"
-          # macOS Intel (cross-compilation from Apple Silicon runner)
+          # Temporarily disable these targets until we fix the macOS x86_64 build
+          # - os: ubuntu-latest
+          #   target: x86_64-unknown-linux-gnu
+          #   artifact_name: omr-bumper
+          #   asset_name: omr-bumper-linux-x86_64
+          # - os: windows-latest
+          #   target: x86_64-pc-windows-msvc
+          #   artifact_name: omr-bumper.exe
+          #   asset_name: omr-bumper-windows-x86_64.exe
+          # - os: macos-latest
+          #   target: aarch64-apple-darwin
+          #   artifact_name: omr-bumper
+          #   asset_name: omr-bumper-macos-aarch64
+          #   comment: "Native build on Apple Silicon"
+          
+          # Only run the macOS Intel build for testing
           - os: macos-latest
             target: x86_64-apple-darwin
             artifact_name: omr-bumper
