@@ -188,7 +188,7 @@ impl Release {
 			//bail!("Repository is dirty");
 			return Ok(());
 		}
-		println!("Repositiory is clean (enough)");
+		println!("Repository is clean (enough)");
 		Ok(())
 	}
 
