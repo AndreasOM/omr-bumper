@@ -36,11 +36,11 @@ grep version Cargo.toml
 # Run omr-bumper from parent directory
 echo "Running omr-bumper..."
 cd ../..
-cargo run -- --path tests/0003--ignored-cargo-lock --pre-release-suffix alpha --bump-level patch
+cargo run -- --path tests/0003-ignored-cargo-lock --pre-release-suffix alpha --bump-level patch
 
 # Check if the version changed as expected
 echo "After omr-bumper run:"
-cd tests/0003--ignored-cargo-lock
+cd tests/0003-ignored-cargo-lock
 grep version Cargo.toml
 
 # Check if tags were created
