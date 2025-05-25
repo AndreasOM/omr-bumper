@@ -56,7 +56,7 @@ impl Repository {
 
 	pub fn check_ignore(&mut self, file: &str) -> anyhow::Result<bool> {
 		let r = self.git_cmd(&["check-ignore", file])?;
-		Ok(r.is_empty())
+		Ok(!r.is_empty())
 	}
 
 	pub fn tag(&mut self, tag: &str, msg: &str) -> anyhow::Result<()> {
