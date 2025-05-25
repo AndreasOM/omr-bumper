@@ -263,12 +263,17 @@ impl Release {
 					}
 				},
 				Step::GitCommitManifest(m) => {
-					/*
+					let mut repo = Repository::new(&self.path);
+
 					let mut files = Vec::new();
 					files.push("Cargo.toml".to_owned());
-					files.push("Cargo.lock".to_owned());
-					*/
-					let files = vec!["Cargo.toml".to_owned(), "Cargo.lock".to_owned()];
+					if !repo.check_ignore("Cargo.lock")? {
+						files.push("Cargo.lock".to_owned());
+					} else {
+						println!("Not commiting ignored Cargo.lock");
+					}
+
+					//let files = vec!["Cargo.toml".to_owned(), "Cargo.lock".to_owned()];
 					let msg = match m {
 						GitCommitMessage::BumpVersionForRelease => {
 							format!(
@@ -286,7 +291,6 @@ impl Release {
 						o => format!(":TODO: {:?}", &o),
 					};
 
-					let mut repo = Repository::new(&self.path);
 					repo.commit(&files, &msg)?;
 				},
 				Step::GitFetch => {
