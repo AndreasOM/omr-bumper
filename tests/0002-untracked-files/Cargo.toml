@@ -1,4 +1,4 @@
 [package]
 name = "test-project"
-version = "0.1.1-dev"
+version = "0.1.0-dev"
 edition = "2021"
