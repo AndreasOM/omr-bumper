@@ -55,8 +55,11 @@ impl Repository {
 	}
 
 	pub fn check_ignore(&mut self, file: &str) -> anyhow::Result<bool> {
-		let r = self.git_cmd(&["check-ignore", file])?;
-		Ok(!r.is_empty())
+		// git check-ignore exit codes:
+		// - 0: file is ignored (outputs the path)
+		// - 1: file is NOT ignored (normal for tracked files)
+		let (exit_code, _output) = self.git_cmd_with_codes(&["check-ignore", file], &[0, 1])?;
+		Ok(exit_code == 0)
 	}
 
 	pub fn tag(&mut self, tag: &str, msg: &str) -> anyhow::Result<()> {
@@ -85,6 +88,15 @@ impl Repository {
 	}
 
 	fn git_cmd(&self, args: &[&str]) -> anyhow::Result<String> {
+		let (_, output) = self.git_cmd_with_codes(args, &[0])?;
+		Ok(output)
+	}
+
+	fn git_cmd_with_codes(
+		&self,
+		args: &[&str],
+		acceptable_codes: &[i32],
+	) -> anyhow::Result<(i32, String)> {
 		let path = match self.path.clone().into_os_string().into_string() {
 			Ok(p) => p,
 			Err(e) => bail!("Can not convert path to string {:?}", &e),
@@ -98,11 +110,13 @@ impl Repository {
 			.args(&args)
 			.output()
 			.with_context(|| format!("error running git `{args:?}`"))?;
-		//		trace!("git output = {:?}", output);
+
 		let stdout = Self::string_from_bytes(output.stdout)?;
-		if output.status.success() {
-			tracing::debug!("{}", stdout);
-			Ok(stdout)
+		let exit_code = output.status.code().unwrap_or(-1);
+
+		if acceptable_codes.contains(&exit_code) {
+			tracing::debug!("exit code {}: {}", exit_code, stdout);
+			Ok((exit_code, stdout))
 		} else {
 			let mut error = "error while running git:\n".to_string();
 			if !stdout.is_empty() {
